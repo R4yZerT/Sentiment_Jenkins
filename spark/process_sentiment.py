@@ -1,78 +1,66 @@
 from pyspark.sql import SparkSession
-from pyspark.ml.feature import Tokenizer, StopWordsRemover, HashingTF, IDF, StringIndexer
-from pyspark.ml.classification import NaiveBayes
 from pyspark.ml import Pipeline
-from pyspark.sql.functions import col, lower, regexp_replace, current_timestamp, udf
-from pyspark.sql.types import ArrayType, DoubleType
+from pyspark.ml.feature import Tokenizer, StopWordsRemover, HashingTF, IDF, StringIndexer
+from pyspark.ml.classification import LogisticRegression
 import sys
 
-# 1. Iniciar sesión
+# 1. Configuración de la Sesión de Spark
+# Incluimos la configuración de MongoDB aquí por si acaso
 spark = SparkSession.builder \
-    .appName("SentimentStreamProcessor") \
-    .config("spark.mongodb.write.connection.uri", "mongodb://mongodb:27017/sentiment_db.predictions") \
+    .appName("SentimentAnalysisSabaneta") \
+    .config("spark.mongodb.output.uri", "mongodb://mongodb:27017/sentiment_db.results") \
     .getOrCreate()
 
-# 2. Carga y Normalización (El "Fix" definitivo)
-# Load with explicit options to handle potential formatting quirks
-df = (spark.read
-      .option("header", "true")
-      .option("inferSchema", "true")
-      .option("sep", ",") # Force comma if it's a standard CSV
-      .option("ignoreLeadingWhiteSpace", "true")
-      .option("ignoreTrailingWhiteSpace", "true")
-      .csv("/opt/spark/data/dataset_sentimientos_500.csv"))
+spark.sparkContext.setLogLevel("ERROR")
 
-# If your CSV has only two columns (text and label), 
-# this renames them regardless of what the header says:
-actual_columns = df.columns
-if len(actual_columns) >= 2:
-    # Rename first column to 'texto' and second to 'sentimiento' 
-    # (adjust indices if your CSV layout is different)
-    df = df.withColumnRenamed(actual_columns[0], "texto").withColumnRenamed(actual_columns[1], "sentimiento")
+print("--- INICIANDO PROCESAMIENTO ---")
 
-print("Fixed Columns:", df.columns)
-# ADD THESE TWO LINES
-print("DEBUG: Real columns found in CSV:")
-df.printSchema()
+try:
+    # 2. Carga de Datos
+    path = "/opt/spark/data/dataset_sentimientos_500.csv"
+    df = spark.read.option("header", "true").option("inferSchema", "true").csv(path)
+    
+    # 3. Mapeo de Columnas (EL FIX CRÍTICO)
+    # Renombramos 'etiqueta' a 'sentimiento' para que el StringIndexer lo encuentre
+    if "etiqueta" in df.columns:
+        df = df.withColumnRenamed("etiqueta", "sentimiento")
+    
+    print(f"Columnas finales para el modelo: {df.columns}")
+    
+    # Limpieza básica
+    df_clean = df.dropna(subset=["texto", "sentimiento"])
 
-# --- EL ARREGLO ESTÁ AQUÍ ---
-# 1. Creamos la columna 'texto_clean' (minúsculas y sin caracteres raros)
-df_clean = df.withColumn("texto_clean", regexp_replace(lower(col("texto")), "[^a-zA-Z\\s]", ""))
+    # 4. Pipeline de Machine Learning
+    # Ahora 'inputCol' coincide perfectamente con el nombre en el DataFrame
+    tokenizer = Tokenizer(inputCol="texto", outputCol="words")
+    remover = StopWordsRemover(inputCol="words", outputCol="filtered")
+    hashingTF = HashingTF(inputCol="filtered", outputCol="rawFeatures", numFeatures=1000)
+    idf = IDF(inputCol="rawFeatures", outputCol="features")
+    
+    # Convertimos la categoría de texto a índice numérico
+    label_stringIdx = StringIndexer(inputCol="sentimiento", outputCol="label")
+    
+    lr = LogisticRegression(maxIter=10, regParam=0.01)
 
-# 2. Renombramos de forma SEGURA y forzada. 
-# Si el CSV traía 'etiqueta', lo forzamos a llamarse 'sentimiento' en df_clean
-if "etiqueta" in df_clean.columns:
-    df_clean = df_clean.withColumnRenamed("etiqueta", "sentimiento")
+    pipeline = Pipeline(stages=[tokenizer, remover, hashingTF, idf, label_stringIdx, lr])
 
-# 3. Borramos nulos basados en la NUEVA columna
-df_clean = df_clean.dropna(subset=["sentimiento", "texto_clean"])
+    # 5. Entrenamiento
+    print("Entrenando modelo...")
+    model = pipeline.fit(df_clean)
+    predictions = model.transform(df_clean)
 
-print("--- ESQUEMA JUSTO ANTES DEL PIPELINE ---")
-df_clean.printSchema() # Aquí DEBE decir 'sentimiento'
+    # 6. Guardar en MongoDB
+    print("Guardando resultados en MongoDB...")
+    # Seleccionamos solo lo relevante para no saturar la base de datos
+    final_df = predictions.select("texto", "sentimiento", "prediction")
+    
+    final_df.write.format("mongodb").mode("append").save()
+    
+    print("--- PROCESO COMPLETADO CON ÉXITO ---")
 
-# 4. Pipeline NLP (Asegúrate de que inputCol sea "sentimiento")
-tokenizer = Tokenizer(inputCol="texto_clean", outputCol="words")
-remover = StopWordsRemover(inputCol="words", outputCol="filtered_words")
-hashingTF = HashingTF(inputCol="filtered_words", outputCol="rawFeatures", numFeatures=1000)
-idf = IDF(inputCol="rawFeatures", outputCol="features")
+except Exception as e:
+    print(f"ERROR FATAL: {str(e)}")
+    sys.exit(1)
 
-# El Indexer ahora sí encontrará la columna
-indexer = StringIndexer(inputCol="sentimiento", outputCol="label") 
-nb = NaiveBayes(featuresCol="features", labelCol="label", modelType="multinomial")
-# 5. Ejecución
-pipeline = Pipeline(stages=[tokenizer, remover, hashingTF, idf, indexer, nb])
-model = pipeline.fit(df_clean)
-
-# 6. Predicciones y MongoDB
-vector_to_list = udf(lambda v: v.toArray().tolist(), ArrayType(DoubleType()))
-predictions = model.transform(df_clean)
-
-final_output = predictions.select(
-    col("texto"),
-    col("prediction"),
-    vector_to_list(col("probability")).alias("confianza"),
-    current_timestamp().alias("fecha")
-)
-
-final_output.write.format("mongodb").mode("append").save()
-print("¡Éxito! Datos guardados en MongoDB.")
+finally:
+    spark.stop()
