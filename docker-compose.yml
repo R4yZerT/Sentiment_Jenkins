@@ -12,18 +12,22 @@ services:
 
   # 2. Orquestador Jenkins
   jenkins:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile # Asegúrate de que apunte al nuevo que creamos
     container_name: sentiment_jenkins
-    privileged: true
+    # privileged: true  <-- Te sugiero comentarlo o borrarlo; con root y el socket es suficiente
     user: root
     ports:
-      - "8085:8080" # Cambiamos el puerto externo a 8085
+      - "8085:8080"
       - "50000:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - sentiment_network
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock # Forzamos a que busque el socket aquí
 
   # 3. API Flask
   flask_api:
