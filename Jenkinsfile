@@ -28,15 +28,15 @@ pipeline {
                 sh 'docker compose up -d'
                 sh 'sleep 15' // Damos un poco más de tiempo para que el sistema operativo del contenedor inicie
                 script {
-                    echo 'Instalando dependencias de Python en Spark (Master y Worker)...'
-                    // Instalamos pip y numpy. Es vital que el Worker también lo tenga por si Spark distribuye la tarea.
-                    sh "docker exec -u root spark_master apt-get update && docker exec -u root spark_master apt-get install -y python3-pip"
-                    sh "docker exec -u root spark_master pip3 install numpy pandas"
+                    echo 'Preparando entorno de datos en Spark...'
+                    // Creamos el directorio /opt/spark/data por si no existe
+                    sh "docker exec -u root spark_master mkdir -p /opt/spark/data"
                     
-                    sh "docker exec -u root spark_worker apt-get update && docker exec -u root spark_worker apt-get install -y python3-pip"
-                    sh "docker exec -u root spark_worker pip3 install numpy pandas"
-
-                    echo 'Inyectando script...'
+                    echo 'Inyectando Dataset y Script...'
+                    // Inyectamos el CSV (Asegúrate de que el nombre del archivo en tu repo sea exacto)
+                        sh "docker cp dataset_sentimientos_500.csv spark_master:/opt/spark/data/dataset_sentimientos_500.csv"
+                    
+                    // Inyectamos el script de procesamiento
                     sh "docker cp ${SPARK_SCRIPT} spark_master:/opt/spark/work-dir/${SPARK_SCRIPT}"
                     sh "docker exec -u root spark_master chmod +x /opt/spark/work-dir/${SPARK_SCRIPT}"
                 }
