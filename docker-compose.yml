@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   # 1. Base de Datos NoSQL
   mongodb:
@@ -10,28 +12,28 @@ services:
     networks:
       - sentiment_network
 
-  # 2. Orquestador Jenkins
+  # 2. Orquestador Jenkins (Corregido para tu M4)
   jenkins:
     build:
       context: .
-      dockerfile: Dockerfile # Asegúrate de que apunte al nuevo que creamos
+      dockerfile: Dockerfile
     container_name: sentiment_jenkins
-    # privileged: true  <-- Te sugiero comentarlo o borrarlo; con root y el socket es suficiente
     user: root
     ports:
       - "8085:8080"
       - "50000:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock # Socket para controlar Docker desde Jenkins
     networks:
       - sentiment_network
     environment:
-      - DOCKER_HOST=unix:///var/run/docker.sock # Forzamos a que busque el socket aquí
+      - DOCKER_HOST=unix:///var/run/docker.sock
 
   # 3. API Flask
   flask_api:
-    build: ./api
+    build:
+      context: ./api
     container_name: sentiment_api
     ports:
       - "5001:5000"
@@ -44,7 +46,9 @@ services:
 
   # 4. Spark Master
   spark-master:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile # Usa el Dockerfile base para tener las herramientas de red
     container_name: spark_master
     environment:
       - SPARK_MODE=master
@@ -56,7 +60,6 @@ services:
       - ./data:/opt/spark/data
     networks:
       - sentiment_network
-    # Comando vital para que el contenedor NO se apague
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
 
   # 5. Spark Worker
@@ -72,7 +75,6 @@ services:
       - ./data:/opt/spark/data
     networks:
       - sentiment_network
-    # Comando vital para conectar al worker con el master
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
 
 networks:

@@ -19,14 +19,14 @@ pipeline {
         stage('2. Build API') {
             steps {
                 echo 'Construyendo imagen de la API Flask...'
-                sh 'docker-compose build flask_api'
+                sh 'docker compose build flask_api'
             }
         }
 
         stage('3. Infra Check') {
             steps {
                 echo 'Validando que los servicios estén arriba...'
-                sh 'docker-compose up -d'
+                sh 'docker compose up -d'
             }
         }
 
