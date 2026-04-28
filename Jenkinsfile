@@ -21,7 +21,7 @@ pipeline {
             }
         }
 
-        sstage('3. Infra & File Inject') {
+        stage('3. Infra & File Inject') {
             steps {
                 echo 'Reiniciando infraestructura...'
                 sh 'docker compose down -v --remove-orphans || true'
