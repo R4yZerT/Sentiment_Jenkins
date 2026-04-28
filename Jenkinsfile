@@ -2,17 +2,18 @@ pipeline {
     agent any
 
     environment {
-    SPARK_MASTER = "spark://spark-master:7077"
-    // Esta es la ruta interna dentro del contenedor spark_master
-    SPARK_SCRIPT = "/opt/spark/work-dir/scripts/process_sentiment.py" 
-    IVY_OPTS = "-Divy.cache.dir=/tmp -Divy.home=/tmp"
-}
+        // Configuración para el contenedor de Spark en tu M4
+        SPARK_MASTER = "spark://spark-master:7077"
+        // Ruta interna según el volumen montado en docker-compose.yml
+        SPARK_SCRIPT = "/opt/spark/work-dir/scripts/process_sentiment.py"
+        IVY_OPTS = "-Divy.cache.dir=/tmp -Divy.home=/tmp"
+    }
 
     stages {
         stage('1. Checkout') {
             steps {
                 echo 'Descargando código del repositorio...'
-                // Jenkins descarga automáticamente el código aquí
+                checkout scm
             }
         }
 
@@ -24,33 +25,42 @@ pipeline {
         }
 
         stage('3. Infra Check') {
-            script {
-                echo 'Esperando a que Spark Master esté listo...'
-                waitUntil {
-                    def status = sh(script: "docker inspect -f '{{.State.Running}}' spark_master", returnStdout: true).trim()
-                    return status == "true" 
+            steps {
+                echo 'Levantando infraestructura...'
+                sh 'docker compose down || true'
+                sh 'docker compose up -d'
+                
+                script {
+                    echo 'Esperando a que Spark Master esté listo...'
+                    // Bucle de espera corregido para sintaxis Jenkins
+                    waitUntil {
+                        def status = sh(script: "docker inspect -f '{{.State.Running}}' spark_master", returnStdout: true).trim()
+                        echo "Estado de spark_master: ${status}"
+                        return status == "true"
+                    }
                 }
+                echo 'Infraestructura verificada. Esperando 10s extra para el booteo interno...'
+                sh 'sleep 10'
             }
-}
+        }
 
         stage('4. Spark Processing') {
             steps {
-                echo 'Iniciando entrenamiento...'
-                // Verificamos si el contenedor sigue vivo antes de disparar
-                sh 'docker ps' 
+                echo 'Iniciando entrenamiento del modelo en Spark...'
+                // Ejecutamos el script usando la ruta interna configurada
                 sh """
                 docker exec spark_master /opt/spark/bin/spark-submit \
                 --master ${env.SPARK_MASTER} \
                 --packages org.mongodb.spark:mongo-spark-connector_2.12:3.0.1 \
                 ${env.SPARK_SCRIPT}
-                    """
+                """
             }
         }
 
         stage('5. Health Check') {
             steps {
                 echo 'Verificando conectividad de la API...'
-                // Esperamos unos segundos a que la API responda en el puerto 5001
+                // Reintento simple para la API
                 sh 'sleep 5 && curl -f http://localhost:5001/stats || exit 1'
             }
         }
@@ -58,10 +68,10 @@ pipeline {
 
     post {
         success {
-            echo '¡Pipeline completado con éxito! Datos listos para Power BI.'
+            echo '¡Pipeline completado con éxito!'
         }
         failure {
-            echo 'Hubo un error en el pipeline. Revisa los logs de Spark o Docker.'
+            echo 'Error detectado. Revisa los logs de Docker con: docker logs spark_master'
         }
     }
 }
