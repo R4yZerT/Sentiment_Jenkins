@@ -24,15 +24,11 @@ pipeline {
         stage('3. Infra Check') {
             steps {
                 echo 'Reseteando infraestructura...'
-                // Detiene y borra TODO (contenedores, redes y volúmenes de este proyecto)
                 sh 'docker compose down -v --remove-orphans || true'
-                
-                // Pequeña pausa para que Docker libere los recursos
                 sh 'sleep 5'
-                
                 sh 'docker compose up -d'
-                
                 script {
+                    sh "docker exec -u root spark_master chmod +x /opt/spark/work-dir/process_sentiment.py"
                     echo 'Verificando archivos montados...'
                     sh "docker exec spark_master ls -la /opt/spark/work-dir/"
                 }
