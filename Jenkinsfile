@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        SPARK_MASTER = "spark://spark-master:7077"
-        SPARK_SCRIPT = "process_sentiment.py" 
-    }
+    SPARK_MASTER = "spark://spark-master:7077"
+    SPARK_SCRIPT = "process_sentiment.py" // Verifica si es con 's' o sin 's'
+}
 
     stages {
         stage('1. Checkout') {
