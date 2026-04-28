@@ -32,7 +32,7 @@ services:
       - "8081:8080"
       - "7077:7077"
     volumes:
-      - ./data:/opt/spark/data
+      - .:/opt/spark/work-dir
     networks:
       - sentiment_network
 

@@ -21,7 +21,7 @@ pipeline {
                 sh 'docker compose up -d --build --force-recreate'
                 
                 echo 'Esperando inicialización...'
-                sleep 20
+
             }
         }
 
