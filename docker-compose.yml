@@ -40,7 +40,7 @@ services:
       - sentiment_network
 
   spark-master:
-    image: bitnami/spark:latest # Cambio a imagen oficial ligera
+    image: bitnami/spark:3.5 # Cambio a imagen oficial ligera
     container_name: spark_master
     environment:
       - SPARK_MODE=master
@@ -55,7 +55,7 @@ services:
       - sentiment_network
 
   spark-worker:
-    image: bitnami/spark:latest # Cambio a imagen oficial ligera
+    image: bitnami/spark:3.5 # Cambio a imagen oficial ligera
     container_name: spark_worker
     environment:
       - SPARK_MODE=worker
