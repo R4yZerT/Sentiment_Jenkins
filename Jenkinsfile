@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     environment {
-        // Rutas internas del contenedor para Spark
-        SPARK_MASTER = "spark://spark-master:7077"
-        SPARK_SCRIPT = "/opt/spark/scripts/process_sentiment.py"
-        IVY_OPTS = "-Divy.cache.dir=/tmp -Divy.home=/tmp"
-    }
+    SPARK_MASTER = "spark://spark-master:7077"
+    // Esta es la ruta interna dentro del contenedor spark_master
+    SPARK_SCRIPT = "/opt/spark/work-dir/scripts/process_sentiment.py" 
+    IVY_OPTS = "-Divy.cache.dir=/tmp -Divy.home=/tmp"
+}
 
     stages {
         stage('1. Checkout') {

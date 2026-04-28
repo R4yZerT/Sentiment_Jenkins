@@ -3,28 +3,11 @@ services:
     image: mongo:latest
     container_name: sentiment_mongo
     ports:
-      - "2717:27017"
+      - "27017:27017"
     volumes:
       - mongo_data:/data/db
     networks:
       - sentiment_network
-
-  jenkins:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: sentiment_jenkins
-    user: root
-    ports:
-      - "8085:8080"
-      - "50000:50000"
-    volumes:
-      - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - sentiment_network
-    environment:
-      - DOCKER_HOST=unix:///var/run/docker.sock
 
   flask_api:
     build:
@@ -41,17 +24,15 @@ services:
 
   spark-master:
     image: apache/spark:3.5.0
-
     container_name: spark_master
     environment:
       - SPARK_MODE=master
-
     ports:
       - "8081:8080"
       - "7077:7077"
     volumes:
-      - ./spark:/opt/spark/scripts
-      - ./data:/opt/spark/data
+      - ./spark:/opt/spark/work-dir/scripts
+      - ./data:/opt/spark/work-dir/data
     networks:
       - sentiment_network
 
@@ -61,11 +42,10 @@ services:
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
-
     depends_on:
       - spark-master
     volumes:
-      - ./data:/opt/spark/data
+      - ./data:/opt/spark/work-dir/data
     networks:
       - sentiment_network
 
