@@ -25,7 +25,8 @@ pipeline {
 
         stage('3. Infra Check') {
             steps {
-                echo 'Validando que los servicios estén arriba...'
+                echo 'Limpiando y validando que los servicios estén arriba...'
+                sh 'docker compose down || true' 
                 sh 'docker compose up -d'
             }
         }
