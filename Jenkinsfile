@@ -41,14 +41,17 @@ pipeline {
 
         stage('4. Spark Processing') {
             steps {
+                echo 'Instalando dependencias de Python en el clúster...'
+                sh "docker exec -u root spark_master pip3 install numpy pandas"
+                sh "docker exec -u root spark_worker pip3 install numpy pandas"
                 echo 'Ejecutando procesamiento...'
                 sh """
                     docker exec spark_master /opt/spark/bin/spark-submit \
-                    --master ${SPARK_MASTER} \
+                    --master spark://spark-master:7077 \
                     --packages org.mongodb.spark:mongo-spark-connector_2.12:3.0.1 \
-                    /opt/spark/work-dir/${SPARK_SCRIPT}
-                """
-            }
+                    /opt/spark/work-dir/process_sentiment.py
+                    """
+                }
         }
     }
 
