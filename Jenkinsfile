@@ -2,57 +2,47 @@ pipeline {
     agent any
 
     environment {
-        SPARK_MASTER = "spark://spark-master:7077"
-        SPARK_SCRIPT = "process_sentiment.py"
+        // Definimos el nombre del contenedor del master de Spark para los comandos exec
+        SPARK_MASTER = "spark_master"
     }
 
     stages {
-        stage('1. Checkout') {
+        stage('Limpieza y Preparación') {
             steps {
-                echo 'Descargando código...'
-                checkout scm
+                echo 'Deteniendo contenedores previos y limpiando volúmenes...'
+                // -v borra los volúmenes, eliminando metadatos de esquemas viejos de Spark
+                sh 'docker-compose down -v --remove-orphans'
             }
         }
 
-        stage('2. Build API') {
+        stage('Levantar Infraestructura') {
             steps {
-                echo 'Construyendo API...'
-                sh 'docker compose build flask_api'
+                echo 'Levantando servicios (MongoDB, Spark Master/Worker, API)...'
+                // --build fuerza a Docker a reconstruir las imágenes si hubo cambios en los archivos
+                sh 'docker-compose up -d --build --force-recreate'
+                
+                echo 'Esperando a que los servicios estén listos (15s)...'
+                sleep 15
             }
         }
 
-        stage('3. Infra & File Inject') {
+        stage('Verificación de Código') {
             steps {
-                echo 'Reiniciando infraestructura...'
-                sh 'docker compose down -v --remove-orphans || true'
-                sh 'docker compose up -d'
-                sh 'sleep 5' // Damos un poco más de tiempo para que el sistema operativo del contenedor inicie
-                script {
-                    echo 'Preparando carpetas en el clúster...'
-                    sh "docker exec -u root spark_master mkdir -p /opt/spark/data"
-                    sh "docker exec -u root spark_worker mkdir -p /opt/spark/data"
-                    echo 'Inyectando Dataset en Master y Worker...'
-                    sh "docker cp dataset_sentimientos_500.csv spark_master:/opt/spark/data/dataset_sentimientos_500.csv"
-                    sh "docker cp dataset_sentimientos_500.csv spark_worker:/opt/spark/data/dataset_sentimientos_500.csv"
-                    echo 'Inyectando Script al Master...'
-                    sh "docker cp process_sentiment.py spark_master:/opt/spark/work-dir/process_sentiment.py"
-                    sh "docker exec -u root spark_master chmod +x /opt/spark/work-dir/process_sentiment.py"
-}
+                echo '--- CONTENIDO DEL ARCHIVO DENTRO DEL CONTENEDOR ---'
+                // Este paso es vital: si el log de Jenkins te muestra aquí el código VIEJO, 
+                // entonces el problema está en tu configuración de volúmenes de Docker.
+                sh "docker exec ${SPARK_MASTER} cat /opt/spark/work-dir/process_sentiment.py"
             }
         }
 
-        stage('4. Spark Processing') {
+        stage('Ejecutar Procesamiento Spark') {
             steps {
-                echo 'Instalando dependencias de Python en el clúster...'
-                // Instalamos NumPy en Master y Worker simultáneamente
-                sh "docker exec -u root spark_master pip3 install numpy pandas"
-                sh "docker exec -u root spark_worker pip3 install numpy pandas"
-        
-                echo 'Ejecutando procesamiento...'
+                echo 'Enviando tarea a Spark Cluster...'
+                // Ejecutamos el script dentro del master
                 sh """
-                    docker exec spark_master /opt/spark/bin/spark-submit \
+                    docker exec ${SPARK_MASTER} spark-submit \
                     --master spark://spark-master:7077 \
-                    --packages org.mongodb.spark:mongo-spark-connector_2.12:3.0.1 \
+                    --packages org.mongodb.spark:mongo-spark-connector_2.12:10.1.1 \
                     /opt/spark/work-dir/process_sentiment.py
                 """
             }
@@ -61,8 +51,12 @@ pipeline {
 
     post {
         failure {
-            echo 'Limpiando contenedores...'
-            sh 'docker rm -f sentiment_mongo spark_master spark_worker sentiment_api || true'
+            echo 'El pipeline falló. Revisa los logs de Spark arriba.'
+        }
+        always {
+            echo 'Pipeline finalizado.'
+            // Opcional: Descomenta la siguiente línea si quieres apagar todo al terminar
+            // sh 'docker-compose down'
         }
     }
 }
