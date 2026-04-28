@@ -42,11 +42,12 @@ pipeline {
         stage('4. Spark Processing') {
     steps {
         echo 'Iniciando procesamiento en Spark...'
-        // Cambiamos la ruta al archivo a simplemente el nombre si está en el work-dir
-        sh "docker exec spark_master /opt/spark/bin/spark-submit \
+        sh """
+            docker exec spark_master /opt/spark/bin/spark-submit \
             --master ${SPARK_MASTER} \
             --packages org.mongodb.spark:mongo-spark-connector_2.12:3.0.1 \
-            /opt/spark/work-dir/${SPARK_SCRIPT}"
+            /opt/spark/work-dir/process_sentiment.py
+        """
     }
 }
 
