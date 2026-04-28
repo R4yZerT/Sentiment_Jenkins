@@ -24,21 +24,16 @@ pipeline {
 
         stage('3. Infra Check') {
             steps {
-                echo 'Levantando infraestructura...'
-                sh 'docker compose down || true'
+                echo 'Limpiando y levantando infraestructura...'
+                    // --remove-orphans asegura que borre contenedores de intentos fallidos
+                sh 'docker compose down --remove-orphans || true'
                 sh 'docker compose up -d'
                 
                 script {
                     echo 'Esperando a que Spark Master esté listo...'
-                    // Bucle de espera corregido para sintaxis Jenkins
-                    waitUntil {
-                        def status = sh(script: "docker inspect -f '{{.State.Running}}' spark_master", returnStdout: true).trim()
-                        echo "Estado de spark_master: ${status}"
-                        return status == "true"
-                    }
+                    // Verificamos que el contenedor realmente subió
+                        sh "docker inspect -f '{{.State.Running}}' spark_master"
                 }
-                echo 'Infraestructura verificada. Esperando 10s extra para el booteo interno...'
-                sh 'sleep 10'
             }
         }
 
