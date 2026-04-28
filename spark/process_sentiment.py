@@ -6,58 +6,48 @@ from pyspark.sql.functions import col, lower, regexp_replace, current_timestamp,
 from pyspark.sql.types import ArrayType, DoubleType
 
 # 1. Iniciar sesión
-# Usamos el conector de MongoDB para Spark
 spark = SparkSession.builder \
     .appName("SentimentStreamProcessor") \
     .config("spark.mongodb.write.connection.uri", "mongodb://mongodb:27017/sentiment_db.predictions") \
     .getOrCreate()
 
 # 2. Carga del Dataset
-# NOTA: Esta ruta debe estar mapeada como volumen en Docker
-try:
-    path = "/opt/spark/data/dataset_sentimientos_500.csv"
-    df = spark.read.option("header", "true").option("inferSchema", "true").csv(path)
-    
-    # --- PASO CRÍTICO: RENOMBRAR COLUMNA ---
-    # Si el CSV trae "etiqueta", lo cambiamos a "sentimiento" para evitar el error Py4JJavaError
-    if "etiqueta" in df.columns:
-        df = df.withColumnRenamed("etiqueta", "sentimiento")
-    
-    print("Esquema detectado y normalizado:")
-    df.printSchema()
-except Exception as e:
-    print(f"Error al leer el archivo en {path}. Verifica los volúmenes de Docker.")
-    raise e
+# IMPORTANTE: Esta ruta requiere que el archivo esté mapeado en el contenedor
+path = "/opt/spark/data/dataset_sentimientos_500.csv"
 
-# 3. Limpieza de Texto (Pre-procesamiento)
-# Creamos una columna limpia sin caracteres especiales y en minúsculas
+df = spark.read.option("header", "true").option("inferSchema", "true").csv(path)
+
+# NORMALIZACIÓN DE COLUMNAS:
+# Si el archivo viene con 'etiqueta', lo renombramos a 'sentimiento' para que el indexer lo encuentre
+if "etiqueta" in df.columns:
+    df = df.withColumnRenamed("etiqueta", "sentimiento")
+
+print("Columnas detectadas en el DataFrame final:")
+df.printSchema()
+
+# 3. Limpieza de Texto
 df_clean = df.withColumn("texto_clean", lower(col("texto")))
 df_clean = df_clean.withColumn("texto_clean", regexp_replace(col("texto_clean"), "[^a-zA-Z\\s]", ""))
-# Eliminamos filas donde el texto o el sentimiento sean nulos
-df_clean = df_clean.dropna(subset=["texto_clean", "sentimiento"])
+df_clean = df_clean.dropna(subset=["sentimiento"]) # Evita errores en el fit
 
-# 4. Definición de las Etapas del Pipeline NLP
+# 4. Pipeline NLP
 tokenizer = Tokenizer(inputCol="texto_clean", outputCol="words")
 remover = StopWordsRemover(inputCol="words", outputCol="filtered_words")
 hashingTF = HashingTF(inputCol="filtered_words", outputCol="rawFeatures", numFeatures=1000)
 idf = IDF(inputCol="rawFeatures", outputCol="features")
 
-# Aquí usamos "sentimiento" porque ya lo normalizamos arriba
+# Aquí usamos 'sentimiento' porque ya lo normalizamos en el paso 2
 indexer = StringIndexer(inputCol="sentimiento", outputCol="label")
 nb = NaiveBayes(featuresCol="features", labelCol="label", modelType="multinomial")
 
-# 5. Construir y Entrenar el Pipeline
+# 5. Entrenar
 pipeline = Pipeline(stages=[tokenizer, remover, hashingTF, idf, indexer, nb])
-print("Entrenando el modelo...")
 model = pipeline.fit(df_clean)
 
-# 6. Realizar Predicciones
+# 6. Predicciones y Guardado
+vector_to_list = udf(lambda v: v.toArray().tolist(), ArrayType(DoubleType()))
 predictions = model.transform(df_clean)
 
-# UDF para convertir el vector de probabilidad a una lista (para MongoDB)
-vector_to_list = udf(lambda v: v.toArray().tolist(), ArrayType(DoubleType()))
-
-# 7. Estructurar salida final
 final_output = predictions.select(
     col("texto"),
     col("prediction"),
@@ -65,8 +55,5 @@ final_output = predictions.select(
     current_timestamp().alias("fecha")
 )
 
-# 8. Guardar en MongoDB
-print("Guardando resultados en MongoDB...")
 final_output.write.format("mongodb").mode("append").save()
-
 print("Procesamiento completado con éxito.")
