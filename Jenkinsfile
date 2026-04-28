@@ -30,28 +30,30 @@ pipeline {
                 script {
                     echo 'Preparando entorno de datos en Spark...'
                     sh "docker exec -u root spark_master mkdir -p /opt/spark/data"
-                    echo 'Inyectando Dataset desde la carpeta data/...'
-                    sh "docker cp data/dataset_sentimientos_500.csv spark_master:/opt/spark/data/dataset_sentimientos_500.csv"
-                    echo 'Inyectando Script de procesamiento...'
-                    sh "docker cp ${SPARK_SCRIPT} spark_master:/opt/spark/work-dir/${SPARK_SCRIPT}"
-                    sh "docker exec -u root spark_master chmod +x /opt/spark/work-dir/${SPARK_SCRIPT}"
-                }
+                    echo 'Inyectando Dataset desde la raíz del proyecto...'
+                    sh "docker cp dataset_sentimientos_500.csv spark_master:/opt/spark/data/dataset_sentimientos_500.csv"
+    echo 'Inyectando Script de procesamiento...'
+    sh "docker cp process_sentiment.py spark_master:/opt/spark/work-dir/process_sentiment.py"
+    sh "docker exec -u root spark_master chmod +x /opt/spark/work-dir/process_sentiment.py"
+}
             }
         }
 
         stage('4. Spark Processing') {
             steps {
                 echo 'Instalando dependencias de Python en el clúster...'
+                // Instalamos NumPy en Master y Worker simultáneamente
                 sh "docker exec -u root spark_master pip3 install numpy pandas"
                 sh "docker exec -u root spark_worker pip3 install numpy pandas"
+        
                 echo 'Ejecutando procesamiento...'
                 sh """
                     docker exec spark_master /opt/spark/bin/spark-submit \
                     --master spark://spark-master:7077 \
                     --packages org.mongodb.spark:mongo-spark-connector_2.12:3.0.1 \
                     /opt/spark/work-dir/process_sentiment.py
-                    """
-                }
+                """
+            }
         }
     }
 
