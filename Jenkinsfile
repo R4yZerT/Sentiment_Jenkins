@@ -26,7 +26,7 @@ pipeline {
                 echo 'Reiniciando infraestructura...'
                 sh 'docker compose down -v --remove-orphans || true'
                 sh 'docker compose up -d'
-                sh 'sleep 15' // Damos un poco más de tiempo para que el sistema operativo del contenedor inicie
+                sh 'sleep 5' // Damos un poco más de tiempo para que el sistema operativo del contenedor inicie
                 script {
                     echo 'Preparando entorno de datos en Spark...'
                     sh "docker exec -u root spark_master mkdir -p /opt/spark/data"
