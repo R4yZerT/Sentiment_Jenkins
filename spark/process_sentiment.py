@@ -34,9 +34,7 @@ hashingTF = HashingTF(inputCol="filtered_words", outputCol="rawFeatures", numFea
 # Escalar las frecuencias (IDF) para resaltar palabras importantes
 idf = IDF(inputCol="rawFeatures", outputCol="features")
 
-# Convertir la etiqueta 'positivo/negativo' a números (0, 1, 2)
-indexer = StringIndexer(inputCol="etiqueta", outputCol="label")
-# 5. El Modelo: Naive Bayes
+indexer = StringIndexer(inputCol="sentimiento", outputCol="label")# 5. El Modelo: Naive Bayes
 nb = NaiveBayes(featuresCol="features", labelCol="label", modelType="multinomial")
 
 # 6. Construir y Entrenar el Pipeline
