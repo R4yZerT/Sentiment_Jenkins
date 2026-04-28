@@ -13,8 +13,27 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 # 2. Carga y Normalización (El "Fix" definitivo)
-path = "/opt/spark/data/dataset_sentimientos_500.csv"
-df = spark.read.option("header", "true").option("inferSchema", "true").csv(path)
+# Load with explicit options to handle potential formatting quirks
+df = (spark.read
+      .option("header", "true")
+      .option("inferSchema", "true")
+      .option("sep", ",") # Force comma if it's a standard CSV
+      .option("ignoreLeadingWhiteSpace", "true")
+      .option("ignoreTrailingWhiteSpace", "true")
+      .csv("/opt/spark/data/dataset_sentimientos_500.csv"))
+
+# If your CSV has only two columns (text and label), 
+# this renames them regardless of what the header says:
+actual_columns = df.columns
+if len(actual_columns) >= 2:
+    # Rename first column to 'texto' and second to 'sentimiento' 
+    # (adjust indices if your CSV layout is different)
+    df = df.withColumnRenamed(actual_columns[0], "texto").withColumnRenamed(actual_columns[1], "sentimiento")
+
+print("Fixed Columns:", df.columns)
+# ADD THESE TWO LINES
+print("DEBUG: Real columns found in CSV:")
+df.printSchema()
 
 # --- EL ARREGLO ESTÁ AQUÍ ---
 # 1. Creamos la columna 'texto_clean' (minúsculas y sin caracteres raros)
