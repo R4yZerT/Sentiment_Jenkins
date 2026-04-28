@@ -1,0 +1,80 @@
+services:
+  # 1. Base de Datos NoSQL
+  mongodb:
+    image: mongo:latest
+    container_name: sentiment_mongo
+    ports:
+      - "2717:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - sentiment_network
+
+  # 2. Orquestador Jenkins
+  jenkins:
+    build: .
+    container_name: sentiment_jenkins
+    privileged: true
+    user: root
+    ports:
+      - "8085:8080" # Cambiamos el puerto externo a 8085
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - sentiment_network
+
+  # 3. API Flask
+  flask_api:
+    build: ./api
+    container_name: sentiment_api
+    ports:
+      - "5001:5000"
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/sentiment_db
+    networks:
+      - sentiment_network
+
+  # 4. Spark Master
+  spark-master:
+    build: .
+    container_name: spark_master
+    environment:
+      - SPARK_MODE=master
+    ports:
+      - "8081:8082"
+      - "7077:7077"
+    volumes:
+      - ./spark:/opt/spark/scripts
+      - ./data:/opt/spark/data
+    networks:
+      - sentiment_network
+    # Comando vital para que el contenedor NO se apague
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+
+  # 5. Spark Worker
+  spark-worker:
+    build: .
+    container_name: spark_worker
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+    depends_on:
+      - spark-master
+    volumes:
+      - ./data:/opt/spark/data
+    networks:
+      - sentiment_network
+    # Comando vital para conectar al worker con el master
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+
+networks:
+  sentiment_network:
+    driver: bridge
+
+volumes:
+  mongo_data:
+  jenkins_home:
