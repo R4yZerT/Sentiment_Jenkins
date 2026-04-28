@@ -2,11 +2,9 @@ pipeline {
     agent any
 
     environment {
-        // Configuración para el contenedor de Spark en tu M4
-        SPARK_MASTER = "spark://spark-master:7077"
-        // Ruta interna según el volumen montado en docker-compose.yml
-        SPARK_SCRIPT = "/opt/spark/work-dir/scripts/process_sentiment.py"
-        IVY_OPTS = "-Divy.cache.dir=/tmp -Divy.home=/tmp"
+    SPARK_MASTER = "spark://spark-master:7077"
+    SPARK_SCRIPT = "/opt/spark/work-dir/process_sentiment.py"
+}
     }
 
     stages {
