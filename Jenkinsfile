@@ -29,14 +29,10 @@ pipeline {
                 sh 'sleep 15' // Damos un poco más de tiempo para que el sistema operativo del contenedor inicie
                 script {
                     echo 'Preparando entorno de datos en Spark...'
-                    // Creamos el directorio /opt/spark/data por si no existe
                     sh "docker exec -u root spark_master mkdir -p /opt/spark/data"
-                    
-                    echo 'Inyectando Dataset y Script...'
-                    // Inyectamos el CSV (Asegúrate de que el nombre del archivo en tu repo sea exacto)
-                        sh "docker cp dataset_sentimientos_500.csv spark_master:/opt/spark/data/dataset_sentimientos_500.csv"
-                    
-                    // Inyectamos el script de procesamiento
+                    echo 'Inyectando Dataset desde la carpeta data/...'
+                    sh "docker cp data/dataset_sentimientos_500.csv spark_master:/opt/spark/data/dataset_sentimientos_500.csv"
+                    echo 'Inyectando Script de procesamiento...'
                     sh "docker cp ${SPARK_SCRIPT} spark_master:/opt/spark/work-dir/${SPARK_SCRIPT}"
                     sh "docker exec -u root spark_master chmod +x /opt/spark/work-dir/${SPARK_SCRIPT}"
                 }
