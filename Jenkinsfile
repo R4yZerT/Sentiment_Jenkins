@@ -23,15 +23,12 @@ pipeline {
 
         stage('3. Infra Check') {
             steps {
-                echo 'Limpiando y levantando infraestructura...'
-                // Usamos || true para que el pipeline no muera si no hay nada que limpiar
+                 echo 'Levantando infraestructura...'
                 sh 'docker compose down --remove-orphans || true'
-                sh 'docker compose up -d'
-                
+                sh 'docker compose up -d'   
                 script {
-                    echo 'Esperando a que Spark Master esté listo...'
-                    // IMPORTANTE: Escapamos las llaves con \ para que Groovy no las procese
-                    sh "docker inspect -f '{{.State.Running}}' spark_master"
+                    echo 'Buscando el script en el contenedor...'
+                    sh "docker exec spark_master find /opt/spark/work-dir -name process_sentiment.py"
                 }
             }
         }
