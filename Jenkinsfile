@@ -25,23 +25,25 @@ pipeline {
 
         stage('3. Infra Check') {
             steps {
-                echo 'Limpiando y validando que los servicios estén arriba...'
+                echo 'Limpiando y validando servicios...'
                 sh 'docker compose down || true'
                 sh 'docker compose up -d'
+                // CRÍTICO: Esperar a que Spark termine de bootear
+                sh 'sleep 15' 
             }
         }
 
         stage('4. Spark Processing') {
             steps {
-                echo 'Iniciando entrenamiento del modelo Naive Bayes en Spark...'
-                // Ejecutamos el script dentro del contenedor de Spark
+                echo 'Iniciando entrenamiento...'
+                // Verificamos si el contenedor sigue vivo antes de disparar
+                sh 'docker ps' 
                 sh """
                 docker exec spark_master /opt/spark/bin/spark-submit \
                 --master ${env.SPARK_MASTER} \
-                --conf "spark.driver.extraJavaOptions=${env.IVY_OPTS}" \
                 --packages org.mongodb.spark:mongo-spark-connector_2.12:3.0.1 \
                 ${env.SPARK_SCRIPT}
-                """
+                    """
             }
         }
 
