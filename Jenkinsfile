@@ -2,9 +2,8 @@ pipeline {
     agent any
 
     environment {
-        // Ajusta estas rutas según tu estructura final confirmada
         SPARK_MASTER = "spark://spark-master:7077"
-        SPARK_SCRIPT = "/opt/spark/work-dir/process_sentiment.py"
+        SPARK_SCRIPT = "process_sentiment.py" 
     }
 
     stages {
