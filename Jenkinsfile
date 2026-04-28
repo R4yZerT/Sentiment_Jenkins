@@ -28,13 +28,15 @@ pipeline {
                 sh 'docker compose up -d'
                 sh 'sleep 5' // Damos un poco más de tiempo para que el sistema operativo del contenedor inicie
                 script {
-                    echo 'Preparando entorno de datos en Spark...'
+                    echo 'Preparando carpetas en el clúster...'
                     sh "docker exec -u root spark_master mkdir -p /opt/spark/data"
-                    echo 'Inyectando Dataset desde la raíz del proyecto...'
+                    sh "docker exec -u root spark_worker mkdir -p /opt/spark/data"
+                    echo 'Inyectando Dataset en Master y Worker...'
                     sh "docker cp dataset_sentimientos_500.csv spark_master:/opt/spark/data/dataset_sentimientos_500.csv"
-    echo 'Inyectando Script de procesamiento...'
-    sh "docker cp process_sentiment.py spark_master:/opt/spark/work-dir/process_sentiment.py"
-    sh "docker exec -u root spark_master chmod +x /opt/spark/work-dir/process_sentiment.py"
+                    sh "docker cp dataset_sentimientos_500.csv spark_worker:/opt/spark/data/dataset_sentimientos_500.csv"
+                    echo 'Inyectando Script al Master...'
+                    sh "docker cp process_sentiment.py spark_master:/opt/spark/work-dir/process_sentiment.py"
+                    sh "docker exec -u root spark_master chmod +x /opt/spark/work-dir/process_sentiment.py"
 }
             }
         }
