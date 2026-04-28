@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  mongodb:
+  sentiment_mongo:
     image: mongo:latest
     container_name: sentiment_mongo
     ports:
@@ -13,15 +13,16 @@ services:
 
   flask_api:
     build:
-      context: ./api
+      context: .
+      dockerfile: Dockerfile
     image: pipe-flask_api:latest
     container_name: sentiment_api
     ports:
       - "5001:5000"
     depends_on:
-      - mongodb
+      - sentiment_mongo
     environment:
-      - MONGO_URI=mongodb://mongodb:27017/sentiment_db
+      - MONGO_URI=mongodb://sentiment_mongo:27017/sentiment_db
     networks:
       - sentiment_network
 
@@ -29,13 +30,13 @@ services:
     image: apache/spark:3.5.0
     container_name: spark_master
     user: root
-    # Comando corregido para mantener el proceso vivo
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
     ports:
       - "8081:8080"
       - "7077:7077"
     volumes:
-      - .:/opt/spark/work-dir:rw
+      # Al apuntar a ./spark, Docker mapea el contenido de esa carpeta
+      - ./spark:/opt/spark/work-dir:rw
       - ./data:/opt/spark/data:rw
     networks:
       - sentiment_network
@@ -44,7 +45,6 @@ services:
     image: apache/spark:3.5.0
     container_name: spark_worker
     user: root
-    # Conexión directa al master dentro de la red interna
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
     depends_on:
       - spark-master
