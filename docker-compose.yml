@@ -25,16 +25,15 @@ services:
   spark-master:
     image: apache/spark:3.5.0
     container_name: spark_master
+    user: root # Forzamos root para evitar problemas de permisos en el M4
     environment:
       - SPARK_MODE=master
     ports:
       - "8081:8080"
       - "7077:7077"
-    volumes:
-      - ./spark:/opt/spark/work-dir/scripts
-      - ./data:/opt/spark/work-dir/data
-    networks:
-      - sentiment_network
+    # COMENTA ESTO PARA PROBAR:
+    # volumes:
+    #   - ./spark:/opt/spark/work-dir/scripts
 
   spark-worker:
     image: apache/spark:3.5.0
