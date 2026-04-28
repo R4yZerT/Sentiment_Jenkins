@@ -14,33 +14,31 @@ spark = SparkSession.builder \
 
 # 2. Carga y Normalización (El "Fix" definitivo)
 path = "/opt/spark/data/dataset_sentimientos_500.csv"
-try:
-    df = spark.read.option("header", "true").option("inferSchema", "true").csv(path)
-    
-    # Si la columna se llama 'etiqueta', la renombramos a 'sentimiento'
-    if "etiqueta" in df.columns:
-        df = df.withColumnRenamed("etiqueta", "sentimiento")
-    
-    # Verificación de seguridad: si después de esto no existe 'sentimiento', el script se detiene con info
-    if "sentimiento" not in df.columns:
-        print(f"ERROR CRÍTICO: Columnas encontradas: {df.columns}")
-        sys.exit(1)
+df = spark.read.option("header", "true").option("inferSchema", "true").csv(path)
 
-except Exception as e:
-    print(f"No se pudo leer el archivo en {path}")
-    raise e
+# --- EL ARREGLO ESTÁ AQUÍ ---
+# 1. Creamos la columna 'texto_clean' (minúsculas y sin caracteres raros)
+df_clean = df.withColumn("texto_clean", regexp_replace(lower(col("texto")), "[^a-zA-Z\\s]", ""))
 
-# 3. Limpieza
-df_clean = df.withColumn("texto_clean", lower(col("texto")))
-df_clean = df_clean.withColumn("texto_clean", regexp_replace(col("texto_clean"), "[^a-zA-Z\\s]", ""))
-df_clean = df_clean.dropna(subset=["sentimiento"])
+# 2. Renombramos de forma SEGURA y forzada. 
+# Si el CSV traía 'etiqueta', lo forzamos a llamarse 'sentimiento' en df_clean
+if "etiqueta" in df_clean.columns:
+    df_clean = df_clean.withColumnRenamed("etiqueta", "sentimiento")
 
-# 4. Pipeline
+# 3. Borramos nulos basados en la NUEVA columna
+df_clean = df_clean.dropna(subset=["sentimiento", "texto_clean"])
+
+print("--- ESQUEMA JUSTO ANTES DEL PIPELINE ---")
+df_clean.printSchema() # Aquí DEBE decir 'sentimiento'
+
+# 4. Pipeline NLP (Asegúrate de que inputCol sea "sentimiento")
 tokenizer = Tokenizer(inputCol="texto_clean", outputCol="words")
 remover = StopWordsRemover(inputCol="words", outputCol="filtered_words")
 hashingTF = HashingTF(inputCol="filtered_words", outputCol="rawFeatures", numFeatures=1000)
 idf = IDF(inputCol="rawFeatures", outputCol="features")
-indexer = StringIndexer(inputCol="sentimiento", outputCol="label") # Ahora sí existe
+
+# El Indexer ahora sí encontrará la columna
+indexer = StringIndexer(inputCol="sentimiento", outputCol="label") 
 nb = NaiveBayes(featuresCol="features", labelCol="label", modelType="multinomial")
 
 # 5. Ejecución
