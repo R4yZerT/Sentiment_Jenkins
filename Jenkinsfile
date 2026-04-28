@@ -40,12 +40,23 @@ pipeline {
 
         stage('Ejecución') {
             steps {
-                echo 'Ejecutando Spark Submit...'
+                echo 'Iniciando Spark Submit con rutas absolutas...'
                 sh """
-                    docker exec ${env.REAL_CONTAINER} spark-submit \
-                    --master spark://spark-master:7077 \
-                    --packages org.mongodb.spark:mongo-spark-connector_2.12:10.1.1 \
-                    /opt/spark/work-dir/process_sentiment.py
+                    docker exec ${env.REAL_CONTAINER} /bin/bash -c "
+                    if [ -f /opt/bitnami/spark/bin/spark-submit ]; then
+                        /opt/bitnami/spark/bin/spark-submit \
+                        --master spark://spark-master:7077 \
+                        --packages org.mongodb.spark:mongo-spark-connector_2.12:10.1.1 \
+                        /opt/spark/work-dir/process_sentiment.py
+                    elif [ -f /opt/spark/bin/spark-submit ]; then
+                        /opt/spark/bin/spark-submit \
+                        --master spark://spark-master:7077 \
+                        --packages org.mongodb.spark:mongo-spark-connector_2.12:10.1.1 \
+                        /opt/spark/work-dir/process_sentiment.py
+                    else
+                        echo 'ERROR: No se encontró spark-submit en las rutas conocidas.'
+                        exit 1
+                    fi"
                 """
             }
         }
