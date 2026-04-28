@@ -24,20 +24,21 @@ pipeline {
         }
 
         stage('3. Infra Check') {
-            steps {
-                echo 'Levantando infraestructura...'
-                sh 'docker compose down || true'
-                sh 'docker compose up -d'
-                
-                script {
-                timeout(time: 1, unit: 'MINUTES') {
-                    until {
-                        status = sh(script: "docker inspect -f '{{.State.Running}}' spark_master", returnStdout: true).trim()
-                        return status == "true"
-                    }
-                }
+    steps {
+        echo 'Levantando infraestructura...'
+        sh 'docker compose down || true'
+        sh 'docker compose up -d'
+        
+        script {
+            echo 'Esperando a que Spark Master esté listo...'
+            // waitUntil reintenta el bloque hasta que retorne 'true'
+            waitUntil {
+                def status = sh(script: "docker inspect -f '{{.State.Running}}' spark_master", returnStdout: true).trim()
+                return status == 'true'
+            }
         }
         echo 'Spark Master está oficialmente arriba.'
+        sh 'sleep 10' // Respiro final para que el proceso interno de Spark inicie
     }
 }
 
