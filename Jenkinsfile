@@ -21,20 +21,24 @@ pipeline {
             }
         }
 
-        stage('3. Infra & File Inject') {
+        sstage('3. Infra & File Inject') {
             steps {
                 echo 'Reiniciando infraestructura...'
                 sh 'docker compose down -v --remove-orphans || true'
                 sh 'docker compose up -d'
-                sh 'sleep 10'
+                sh 'sleep 15' // Damos un poco más de tiempo para que el sistema operativo del contenedor inicie
                 script {
-                    echo 'Inyectando script directamente al contenedor...'
-                    // Esta es la clave: copiamos el archivo desde el workspace de Jenkins al contenedor
+                    echo 'Instalando dependencias de Python en Spark (Master y Worker)...'
+                    // Instalamos pip y numpy. Es vital que el Worker también lo tenga por si Spark distribuye la tarea.
+                    sh "docker exec -u root spark_master apt-get update && docker exec -u root spark_master apt-get install -y python3-pip"
+                    sh "docker exec -u root spark_master pip3 install numpy pandas"
+                    
+                    sh "docker exec -u root spark_worker apt-get update && docker exec -u root spark_worker apt-get install -y python3-pip"
+                    sh "docker exec -u root spark_worker pip3 install numpy pandas"
+
+                    echo 'Inyectando script...'
                     sh "docker cp ${SPARK_SCRIPT} spark_master:/opt/spark/work-dir/${SPARK_SCRIPT}"
                     sh "docker exec -u root spark_master chmod +x /opt/spark/work-dir/${SPARK_SCRIPT}"
-                    
-                    echo 'Verificación de archivo:'
-                    sh "docker exec spark_master ls -la /opt/spark/work-dir/${SPARK_SCRIPT}"
                 }
             }
         }
