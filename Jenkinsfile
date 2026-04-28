@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        SPARK_MASTER = "spark://spark-master:7077"
-        SPARK_SCRIPT = "process_sentiment.py"
-    }
+    SPARK_MASTER = "spark://spark-master:7077"
+    SPARK_SCRIPT = "process_sentiment.py" // Verifica si es con 's' o sin 's'
+}
 
     stages {
         stage('1. Checkout') {
@@ -21,37 +21,49 @@ pipeline {
             }
         }
 
-        spark-master:
-            image: apache/spark:3.5.0
-            container_name: spark_master
-            user: root
-            command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
-            ports:
-                - "8081:8080"
-                - "7077:7077"
-            volumes:
-                # Al apuntar a ./spark, Docker mapea el contenido de esa carpeta
-                - ./spark:/opt/spark/work-dir:rw
-                - ./data:/opt/spark/data:rw
-            networks:
-                - sentiment_network
+        stage('3. Infra Check') {
+            steps {
+                echo 'Reseteando infraestructura...'
+                sh 'docker compose down -v --remove-orphans || true'
+                sh 'docker compose up -d'
+                sh 'sleep 10' // Aumentamos el tiempo por si OneDrive está sincronizando
+                script {
+                    echo 'Verificando script en el volumen compartido...'
+                    // Listamos el contenido para confirmar que Docker ve el archivo
+                    sh "docker exec spark_master ls -la /opt/spark/work-dir/"
+                    sh "docker exec -u root spark_master chmod +x /opt/spark/work-dir/process_sentiment.py"
+                }
+            }
+        }
 
         stage('4. Spark Processing') {
             steps {
                 echo 'Iniciando procesamiento en Spark...'
                 sh """
                     docker exec spark_master /opt/spark/bin/spark-submit \
-                    --master ${SPARK_MASTER} \
+                    --master spark://spark-master:7077 \
                     --packages org.mongodb.spark:mongo-spark-connector_2.12:3.0.1 \
-                    /opt/spark/work-dir/${SPARK_SCRIPT}
+                    /opt/spark/work-dir/process_sentiment.py
                 """
             }
         }
 
+        stage('4. Spark Processing') {
+    steps {
+        echo 'Iniciando procesamiento en Spark...'
+        sh """
+            docker exec spark_master /opt/spark/bin/spark-submit \
+            --master ${SPARK_MASTER} \
+            --packages org.mongodb.spark:mongo-spark-connector_2.12:3.0.1 \
+            /opt/spark/work-dir/process_sentiment.py
+        """
+    }
+}
+
         stage('5. Health Check') {
             steps {
-                echo 'Verificando API...'
-                sh 'curl -f http://localhost:5001/health || echo "API no respondió, pero continuando..."'
+                echo 'Verificando estado de los servicios...'
+                sh 'curl -f http://localhost:5001/health || exit 1'
             }
         }
     }
@@ -61,7 +73,8 @@ pipeline {
             echo 'Finalizando ejecución...'
         }
         failure {
-            echo 'Error detectado. Limpiando...'
+            echo 'Error detectado. Limpiando contenedores conflictivos...'
+            // Limpieza automática si algo falla para no bloquear el siguiente build
             sh 'docker rm -f sentiment_mongo spark_master spark_worker sentiment_api || true'
         }
     }
