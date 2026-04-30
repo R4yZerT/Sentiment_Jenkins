@@ -47,11 +47,16 @@ try:
 
     # 7. Guardar en MongoDB
     print("Intentando guardar en MongoDB...")
-    # Usamos .format("mongodb") y aseguramos la escritura
+    # Forzamos la escritura con count()
     final_df.write.format("mongodb") \
         .mode("append") \
+        .option("database", "sentiment_db") \
         .option("collection", "results") \
         .save()
+    
+    # FORZAMOS LA EJECUCIÓN
+    n_registros = final_df.count()
+    print(f"--- ¡ÉXITO! Se han escrito {n_registros} registros en MongoDB ---")
     
     print("--- ¡ÉXITO! Datos guardados en MongoDB ---")
 
