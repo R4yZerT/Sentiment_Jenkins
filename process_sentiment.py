@@ -16,7 +16,7 @@ spark.sparkContext.setLogLevel("ERROR")
 try:
     # 2. Carga de Datos
     path = "/opt/spark/data/dataset_sentimientos_500.csv"
-    df = spark.read.option("header", "true").option("inferSchema", "true").csv(path)
+    df = spark.readStream.schema(schema).csv("/ruta/a/carpeta_con_nuevos_csvs")
     
     # 3. Limpieza: Aseguramos que existan las columnas necesarias
     df_clean = df.dropna(subset=["texto", "etiqueta"])
