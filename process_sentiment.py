@@ -15,20 +15,16 @@ def main():
 
     spark.sparkContext.setLogLevel("ERROR")
 
-    try:
-        # 2. Definición del Esquema (Dentro de la función para evitar errores de scope)
-        schema = StructType([
-            StructField("texto", StringType(), True),
-            StructField("etiqueta", StringType(), True)
-        ])
+    # Definición de esquema para el CSV
+    schema = StructType([
+        StructField("texto", StringType(), True),
+        StructField("etiqueta", StringType(), True)
+    ])
 
-        # 3. Lectura como Stream
-        # Asegúrate de que esta carpeta contenga tus archivos .csv
+    try:
         path = "/opt/spark/data/" 
-        print(f"Leyendo datos desde: {path}")
-        df = spark.readStream.option("header", "true").schema(schema).csv(path)
         
-        # 4. Pipeline de ML
+        # 2. Pipeline de ML (Estructura)
         tokenizer = Tokenizer(inputCol="texto", outputCol="words")
         remover = StopWordsRemover(inputCol="words", outputCol="filtered")
         hashingTF = HashingTF(inputCol="filtered", outputCol="rawFeatures", numFeatures=1000)
@@ -38,18 +34,23 @@ def main():
 
         pipeline = Pipeline(stages=[tokenizer, remover, hashingTF, idf, label_stringIdx, lr])
 
-        # 5. Entrenamiento (Modelo inicial)
-        # Nota: En streaming real, cargarías un modelo previamente guardado (.load)
-        # Aquí usamos un modelo base para transformar el flujo
-        model = pipeline.fit(df.dropna()) 
-        predictions = model.transform(df)
+        # 3. Entrenamiento (Batch - Necesario para que el modelo aprenda)
+        print("Entrenando modelo con datos históricos...")
+        df_batch = spark.read.option("header", "true").schema(schema).csv(path)
+        model = pipeline.fit(df_batch.dropna())
+        print("Modelo entrenado con éxito.")
 
-        # 6. Preparación de datos
+        # 4. Lectura de Streaming (Inferencia en tiempo real)
+        print("Iniciando flujo de streaming...")
+        df_stream = spark.readStream.option("header", "true").schema(schema).csv(path)
+        
+        # 5. Transformación del flujo
+        predictions = model.transform(df_stream)
+
+        # 6. Preparación y escritura en MongoDB
         final_df = predictions.select("texto", "etiqueta", "prediction") \
                               .withColumn("fecha_proceso", current_timestamp())
 
-        # 7. Escritura en MongoDB (Streaming)
-        print("Iniciando escritura en MongoDB...")
         query = final_df.writeStream \
             .format("mongodb") \
             .option("checkpointLocation", "/tmp/checkpoint") \
