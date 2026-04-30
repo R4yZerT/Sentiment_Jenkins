@@ -6,9 +6,9 @@ from pyspark.sql.functions import current_timestamp
 import sys
 
 # 1. Configuración de la Sesión de Spark con el conector de MongoDB
+# Asegúrate de usar 'sentiment_mongo' y NO 'mongodb'
 spark = SparkSession.builder \
-    .appName("SentimentAnalysisSabaneta") \
-    .config("spark.mongodb.write.connection.uri", "mongodb://sentiment_mongo:27017/sentiment_db.results") \
+    .config("spark.mongodb.write.connection.uri", "mongodb://sentiment_mongo:27017/sentiment_db.predictions") \
     .getOrCreate()
 
 spark.sparkContext.setLogLevel("ERROR")
@@ -61,4 +61,3 @@ except Exception as e:
 
 finally:
     spark.stop()
-    
