@@ -19,16 +19,10 @@ try:
     # 2. Carga de Datos
     path = "/opt/spark/data/dataset_sentimientos_500.csv"
     df = spark.read.option("header", "true").option("inferSchema", "true").csv(path)
-    
-    # 3. Mapeo de Columnas (EL FIX CRÍTICO)
-    # Renombramos 'etiqueta' a 'sentimiento' para que el StringIndexer lo encuentre
-    if "etiqueta" in df.columns:
-        df = df.withColumnRenamed("etiqueta", "sentimiento")
-    
     print(f"Columnas finales para el modelo: {df.columns}")
     
     # Limpieza básica
-    df_clean = df.dropna(subset=["texto", "sentimiento"])
+    df_clean = df.dropna(subset=["texto", "etiqueta"])
 
     # 4. Pipeline de Machine Learning
     # Ahora 'inputCol' coincide perfectamente con el nombre en el DataFrame
@@ -38,7 +32,7 @@ try:
     idf = IDF(inputCol="rawFeatures", outputCol="features")
     
     # Convertimos la categoría de texto a índice numérico
-    label_stringIdx = StringIndexer(inputCol="sentimiento", outputCol="label")
+    label_stringIdx = StringIndexer(inputCol="etiqueta", outputCol="label")
     
     lr = LogisticRegression(maxIter=10, regParam=0.01)
 
@@ -52,7 +46,7 @@ try:
     # 6. Guardar en MongoDB
     print("Guardando resultados en MongoDB...")
     # Seleccionamos solo lo relevante para no saturar la base de datos
-    final_df = predictions.select("texto", "sentimiento", "prediction")
+    final_df = predictions.select("texto", "etiqueta", "prediction")
     
     final_df.write.format("mongodb").mode("append").save()
     
