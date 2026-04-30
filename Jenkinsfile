@@ -51,12 +51,12 @@ pipeline {
                     if [ -f /opt/bitnami/spark/bin/spark-submit ]; then
                         /opt/bitnami/spark/bin/spark-submit \
                         --master spark://spark-master:7077 \
-                        --packages org.mongodb.spark:mongo-spark-connector_2.12:10.1.1 \
+                        --packages org.mongodb.spark:mongo-spark-connector_2.12:10.4.0 \
                         /opt/spark/work-dir/process_sentiment.py
                     else
                         /opt/spark/bin/spark-submit \
                         --master spark://spark-master:7077 \
-                        --packages org.mongodb.spark:mongo-spark-connector_2.12:10.1.1 \
+                        --packages org.mongodb.spark:mongo-spark-connector_2.12:10.4.0 \
                         /opt/spark/work-dir/process_sentiment.py
                     fi"
                 """
