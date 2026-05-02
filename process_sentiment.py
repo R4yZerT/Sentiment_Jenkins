@@ -1,23 +1,17 @@
+import sys
+import time
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import Tokenizer, StopWordsRemover, HashingTF, IDF, StringIndexer
 from pyspark.ml.classification import LogisticRegression
 from pyspark.sql.functions import current_timestamp
-import shutil
-import os
-import sys
 
 def main():
-    # 1. Configuración de rutas
     data_path = "/opt/spark/data/"
-    checkpoint_path = "/tmp/checkpoint"
-    
-    # Limpiar estado previo
-    if os.path.exists(checkpoint_path):
-        shutil.rmtree(checkpoint_path)
+    # Checkpoint dinámico para evitar colisiones entre ejecuciones
+    checkpoint_path = f"/tmp/checkpoint_{int(time.time())}"
 
-    # 2. Inicialización
     spark = SparkSession.builder \
         .appName("SentimentStreamingSabaneta") \
         .config("spark.mongodb.write.connection.uri", "mongodb://sentiment_mongo:27017/sentiment_db.results") \
@@ -30,12 +24,11 @@ def main():
         StructField("etiqueta", StringType(), True)
     ])
 
-    # 3. Entrenamiento con datos históricos (debe existir un archivo inicial)
-    # Si no hay archivos, el script espera; si hay, entrena.
     try:
+        print("Entrenando modelo con datos iniciales...")
+        # Leemos los archivos actuales para entrenar el modelo batch
         df_batch = spark.read.option("header", "true").schema(schema).csv(data_path)
         
-        # Pipeline de ML
         tokenizer = Tokenizer(inputCol="texto", outputCol="words")
         remover = StopWordsRemover(inputCol="words", outputCol="filtered")
         hashingTF = HashingTF(inputCol="filtered", outputCol="rawFeatures", numFeatures=1000)
@@ -45,34 +38,37 @@ def main():
 
         pipeline = Pipeline(stages=[tokenizer, remover, hashingTF, idf, label_stringIdx, lr])
         model = pipeline.fit(df_batch.dropna())
-        print("--- MODELO ENTRENADO CON ÉXITO ---")
+        print("Modelo listo.")
 
+        # CONFIGURACIÓN DE STREAMING ROBUSTA
         # 4. STREAMING
-        # IMPORTANTE: .option("maxFilesPerTrigger", 1) evita que el stream colapse
         df_stream = spark.readStream \
             .option("header", "true") \
+            .option("ignoreCorruptFiles", "true") \
+            .option("ignoreChanges", "true") \
+            .option("latestFirst", "false") \
+            .option("maxFilesPerTrigger", 1) \
             .schema(schema) \
             .csv(data_path)
         
         predictions = model.transform(df_stream)
 
-        # 5. Escritura a MongoDB
+        print(f"Iniciando flujo. Checkpoint en: {checkpoint_path}")
+
         query = predictions.select("texto", "etiqueta", "prediction") \
             .withColumn("fecha_proceso", current_timestamp()) \
             .writeStream \
             .format("mongodb") \
             .option("checkpointLocation", checkpoint_path) \
-            .option("database", "sentiment_db") \
-            .option("collection", "results") \
             .outputMode("append") \
             .trigger(processingTime='5 seconds') \
             .start()
         
-        print("--- ESPERANDO DATOS EN TIEMPO REAL... ---")
         query.awaitTermination()
 
     except Exception as e:
-        print(f"--- ERROR: {str(e)} ---")
+        print(f"--- ERROR DURANTE LA EJECUCIÓN ---: {str(e)}")
+        sys.exit(1)
     finally:
         spark.stop()
 
