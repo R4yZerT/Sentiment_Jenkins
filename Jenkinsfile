@@ -67,3 +67,4 @@ pipeline {
         success { echo '¡Excelente! Todo fluyó correctamente.' }
         failure { echo 'Hubo un error. Verifica que el archivo CSV esté en la raíz de tu Git.' }
     }
+}
