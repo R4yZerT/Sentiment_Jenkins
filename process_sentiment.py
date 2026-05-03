@@ -9,11 +9,13 @@ from pyspark.ml.classification import LogisticRegression
 def main():
     data_path = "/opt/spark/data/dataset_sentimientos_500.csv"
     
-    # Configuración de sesión con parámetros explícitos para el conector
-    # Esto elimina la ambigüedad que causa que no se creen las colecciones
+    # EL SECRETO DE LA VERSIÓN 10.x: TODO debe llevar el prefijo "spark.mongodb.write."
+    # Lo ponemos directo en la sesión para que sea inquebrantable.
     spark = SparkSession.builder \
         .appName("SentimentBatchSabaneta") \
-        .config("spark.mongodb.write.connection.uri", "mongodb://sentiment_mongo:27017") \
+        .config("spark.mongodb.write.connection.uri", "mongodb://sentiment_mongo:27017/sentiment_db") \
+        .config("spark.mongodb.write.database", "sentiment_db") \
+        .config("spark.mongodb.write.collection", "results") \
         .getOrCreate()
     
     spark.sparkContext.setLogLevel("WARN")
@@ -26,7 +28,7 @@ def main():
     try:
         df = spark.read.option("header", "true").schema(schema).csv(data_path)
         
-        # Pipeline de ML (Procesamiento)
+        # Pipeline de ML
         tokenizer = Tokenizer(inputCol="texto", outputCol="words")
         remover = StopWordsRemover(inputCol="words", outputCol="filtered")
         hashingTF = HashingTF(inputCol="filtered", outputCol="rawFeatures", numFeatures=1000)
@@ -43,17 +45,17 @@ def main():
         print(f"DEBUG: Filas listas para persistir: {count}")
 
         if count > 0:
-            # Escritura con WriteConcern explícito para asegurar la confirmación del nodo
-            predictions.select("texto", "etiqueta", "prediction") \
-                .withColumn("fecha_proceso", current_timestamp()) \
-                .write \
+            # Escribimos usando 'append' sin opciones extra, ya que la sesión 
+            # ya sabe exactamente a dónde ir gracias a la configuración de arriba.
+            df_to_save = predictions.select("texto", "etiqueta", "prediction") \
+                .withColumn("fecha_proceso", current_timestamp())
+            
+            df_to_save.write \
                 .format("mongodb") \
-                .mode("overwrite") \
-                .option("database", "sentiment_db") \
-                .option("collection", "results") \
-                .option("writeConcern.w", "1") \
+                .mode("append") \
                 .save()
-            print("--- ÉXITO: Datos confirmados en MongoDB ---")
+                
+            print("--- ÉXITO: Datos inyectados en la colección 'results' ---")
         else:
             print("ERROR: DataFrame vacío.")
             sys.exit(1)
