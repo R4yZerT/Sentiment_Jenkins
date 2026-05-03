@@ -4,15 +4,19 @@ pipeline {
     stages {
         stage('Sincronización') {
             steps {
-                echo "Sincronizando archivos..."
-                // Crear carpetas sin tocar estructuras internas de Git
+                echo "Sincronizando archivos y dependencias..."
                 sh "docker exec -u root spark_master mkdir -p /opt/spark/work-dir /opt/spark/data"
                 
-                // Copiar solo los archivos necesarios
+                // Copia los archivos
                 sh "docker cp process_sentiment.py spark_master:/opt/spark/work-dir/process_sentiment.py"
                 sh "docker cp dataset_sentimientos_500.csv spark_master:/opt/spark/data/dataset_sentimientos_500.csv"
                 
-                // CAMBIO AQUÍ: Cambiar permisos solo a los archivos específicos, no a toda la carpeta recursivamente
+                // INSTALACIÓN FORZADA DE DEPENDENCIAS
+                // Usamos --user por si el usuario no es root, y nos aseguramos de que pip esté actualizado
+                sh "docker exec -u root spark_master python3 -m pip install --upgrade pip"
+                sh "docker exec -u root spark_master python3 -m pip install numpy pandas"
+                
+                // Permisos
                 sh "docker exec -u root spark_master chmod 777 /opt/spark/work-dir/process_sentiment.py /opt/spark/data/dataset_sentimientos_500.csv"
             }
         }
