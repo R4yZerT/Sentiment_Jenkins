@@ -9,11 +9,10 @@ from pyspark.ml.classification import LogisticRegression
 def main():
     data_path = "/opt/spark/data/dataset_sentimientos_500.csv"
     
-    # 1. Usamos la IP directa 172.18.0.3 en lugar del nombre 'sentiment_mongo'
-    # para evitar errores de resolución DNS en la red de Docker.
+    # 1. Configuración de sesión usando el nombre del servicio en Docker
     spark = SparkSession.builder \
         .appName("SentimentBatchSabaneta") \
-        .config("spark.mongodb.write.connection.uri", "mongodb://172.18.0.3:27017/sentiment_db.results") \
+        .config("spark.mongodb.write.connection.uri", "mongodb://sentiment_mongo:27017/sentiment_db.results") \
         .getOrCreate()
     
     spark.sparkContext.setLogLevel("WARN")
@@ -43,18 +42,16 @@ def main():
         print(f"DEBUG: Filas procesadas: {count}")
 
         if count > 0:
-            # 2. Escribimos forzando las opciones explícitas de DB y colección
-            # Usamos 'append' por si acaso 'overwrite' está limpiando antes de verificar.
+            # 2. Escritura: La URI en la sesión ya apunta a sentiment_db.results
+            # Usamos append para evitar que overwrite borre datos antes de que los veas
             predictions.select("texto", "etiqueta", "prediction") \
                 .withColumn("fecha_proceso", current_timestamp()) \
                 .write \
                 .format("mongodb") \
-                .mode("overwrite") \
-                .option("database", "sentiment_db") \
-                .option("collection", "results") \
+                .mode("append") \
                 .option("writeConcern.w", "1") \
                 .save()
-            print("--- ÉXITO: Datos persistidos en sentiment_db.results ---")
+            print("--- ÉXITO: Datos guardados en MongoDB ---")
         else:
             print("ERROR: El DataFrame está vacío.")
             sys.exit(1)
