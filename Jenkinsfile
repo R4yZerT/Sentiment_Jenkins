@@ -27,9 +27,9 @@ pipeline {
                     docker exec spark_master /opt/spark/bin/spark-submit \
                     --master local[*] \
                     --packages org.mongodb.spark:mongo-spark-connector_2.12:10.4.0 \
+                    --conf "spark.mongodb.write.connection.uri=mongodb://sentiment_mongo:27017/sentiment_db.results" \
                     /opt/spark/work-dir/process_sentiment.py
                 """
-                echo "¡Proceso finalizado!"
             }
         }
     }
