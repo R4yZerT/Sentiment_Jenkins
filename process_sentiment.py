@@ -12,7 +12,7 @@ def main():
     # 1. Configuración de sesión usando el nombre del servicio en Docker
     spark = SparkSession.builder \
         .appName("SentimentBatchSabaneta") \
-        .config("spark.mongodb.output.uri", "mongodb://sentiment_mongo:27017/sentiment_db.results") \
+        .config("spark.mongodb.write.connection.uri", "mongodb://sentiment_mongo:27017/sentiment_db.results") \
         .getOrCreate()
     
     spark.sparkContext.setLogLevel("WARN")
