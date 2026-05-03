@@ -27,6 +27,7 @@ services:
     image: apache/spark:3.5.0
     container_name: spark_master
     user: root
+    restart: always
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
     ports:
       - "8081:8080"
