@@ -7,14 +7,13 @@ from pyspark.ml.feature import Tokenizer, StopWordsRemover, HashingTF, IDF, Stri
 from pyspark.ml.classification import LogisticRegression
 
 def main():
-    # Usamos la ruta donde el Jenkinsfile coloca el archivo
     data_path = "/opt/spark/data/dataset_sentimientos_500.csv"
     
-    # IMPORTANTE: Definimos todo en la sesión para evitar ambigüedades en el conector
-    # La URI incluye la base de datos y la colección por defecto.
+    # 1. Usamos la IP directa 172.18.0.3 en lugar del nombre 'sentiment_mongo'
+    # para evitar errores de resolución DNS en la red de Docker.
     spark = SparkSession.builder \
         .appName("SentimentBatchSabaneta") \
-        .config("spark.mongodb.write.connection.uri", "mongodb://sentiment_mongo:27017/sentiment_db.results") \
+        .config("spark.mongodb.write.connection.uri", "mongodb://172.18.0.3:27017/sentiment_db.results") \
         .getOrCreate()
     
     spark.sparkContext.setLogLevel("WARN")
@@ -41,19 +40,23 @@ def main():
         predictions = model.transform(df)
 
         count = predictions.count()
-        print(f"DEBUG: Filas procesadas exitosamente: {count}")
+        print(f"DEBUG: Filas procesadas: {count}")
 
         if count > 0:
-            # Escribimos directo sin pasar opciones adicionales que puedan confundir al conector
+            # 2. Escribimos forzando las opciones explícitas de DB y colección
+            # Usamos 'append' por si acaso 'overwrite' está limpiando antes de verificar.
             predictions.select("texto", "etiqueta", "prediction") \
                 .withColumn("fecha_proceso", current_timestamp()) \
                 .write \
                 .format("mongodb") \
                 .mode("overwrite") \
+                .option("database", "sentiment_db") \
+                .option("collection", "results") \
+                .option("writeConcern.w", "1") \
                 .save()
             print("--- ÉXITO: Datos persistidos en sentiment_db.results ---")
         else:
-            print("ERROR: El DataFrame resultante está vacío.")
+            print("ERROR: El DataFrame está vacío.")
             sys.exit(1)
 
     except Exception as e:
