@@ -7,15 +7,14 @@ from pyspark.ml.feature import Tokenizer, StopWordsRemover, HashingTF, IDF, Stri
 from pyspark.ml.classification import LogisticRegression
 
 def main():
+    # Usamos la ruta donde el Jenkinsfile coloca el archivo
     data_path = "/opt/spark/data/dataset_sentimientos_500.csv"
     
-    # EL SECRETO DE LA VERSIÓN 10.x: TODO debe llevar el prefijo "spark.mongodb.write."
-    # Lo ponemos directo en la sesión para que sea inquebrantable.
+    # IMPORTANTE: Definimos todo en la sesión para evitar ambigüedades en el conector
+    # La URI incluye la base de datos y la colección por defecto.
     spark = SparkSession.builder \
         .appName("SentimentBatchSabaneta") \
-        .config("spark.mongodb.write.connection.uri", "mongodb://sentiment_mongo:27017/sentiment_db") \
-        .config("spark.mongodb.write.database", "sentiment_db") \
-        .config("spark.mongodb.write.collection", "results") \
+        .config("spark.mongodb.write.connection.uri", "mongodb://sentiment_mongo:27017/sentiment_db.results") \
         .getOrCreate()
     
     spark.sparkContext.setLogLevel("WARN")
@@ -42,22 +41,19 @@ def main():
         predictions = model.transform(df)
 
         count = predictions.count()
-        print(f"DEBUG: Filas listas para persistir: {count}")
+        print(f"DEBUG: Filas procesadas exitosamente: {count}")
 
         if count > 0:
-            # Escribimos usando 'append' sin opciones extra, ya que la sesión 
-            # ya sabe exactamente a dónde ir gracias a la configuración de arriba.
-            df_to_save = predictions.select("texto", "etiqueta", "prediction") \
-                .withColumn("fecha_proceso", current_timestamp())
-            
-            df_to_save.write \
+            # Escribimos directo sin pasar opciones adicionales que puedan confundir al conector
+            predictions.select("texto", "etiqueta", "prediction") \
+                .withColumn("fecha_proceso", current_timestamp()) \
+                .write \
                 .format("mongodb") \
-                .mode("append") \
+                .mode("overwrite") \
                 .save()
-                
-            print("--- ÉXITO: Datos inyectados en la colección 'results' ---")
+            print("--- ÉXITO: Datos persistidos en sentiment_db.results ---")
         else:
-            print("ERROR: DataFrame vacío.")
+            print("ERROR: El DataFrame resultante está vacío.")
             sys.exit(1)
 
     except Exception as e:
