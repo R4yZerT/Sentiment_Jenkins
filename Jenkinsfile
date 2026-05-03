@@ -5,20 +5,17 @@ pipeline {
         SERVICE_NAME = "spark_master"
     }
 
-    stages {
-        stage('Limpieza y Arranque') {
-            steps {
-                echo 'Borrando rastros previos...'
-                sh 'docker compose down --remove-orphans'
-                sh 'docker compose up -d --build --force-recreate'
-                
-                echo 'Esperando a que Docker asigne nombres y rutas...'                
-                script {
-                    env.REAL_CONTAINER = sh(script: "docker ps --filter 'name=${SERVICE_NAME}' --format '{{.Names}}' | head -n 1", returnStdout: true).trim()
-                    echo "Contenedor detectado: ${env.REAL_CONTAINER}"
-                }
-            }
-        }
+    stage('Limpieza y Arranque') {
+    steps {
+        echo 'Borrando rastros previos de forma forzada...'
+        sh 'docker compose down --remove-orphans || true'
+        sh 'docker ps -q --filter "name=spark_master" | xargs -r docker rm -f'
+        sh 'docker ps -q --filter "name=sentiment_mongo" | xargs -r docker rm -f'
+        sh 'docker ps -q --filter "name=sentiment_jenkins" | xargs -r docker rm -f'
+        echo 'Iniciando nuevo stack...'
+        sh 'docker compose up -d --build --force-recreate'
+    }
+}
 
         stage('Inyección de Datos y Dependencias') {
             steps {
