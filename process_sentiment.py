@@ -12,7 +12,7 @@ def main():
     # 1. Configuración de sesión usando el nombre del servicio en Docker
     spark = SparkSession.builder \
         .appName("SentimentBatchSabaneta") \
-        .config("spark.mongodb.write.connection.uri", "mongodb://sentiment_mongo:27017/sentiment_db.results") \
+        .config("spark.mongodb.output.uri", "mongodb://sentiment_mongo:27017/sentiment_db.results") \
         .getOrCreate()
     
     spark.sparkContext.setLogLevel("WARN")
@@ -42,20 +42,21 @@ def main():
         print(f"DEBUG: Filas procesadas: {count}")
 
         if count > 0:
-            # 2. Escritura: La URI en la sesión ya apunta a sentiment_db.results
-            # Usamos append para evitar que overwrite borre datos antes de que los veas
+            # 2. Escribir usando el método directo de MongoSpark
             predictions.select("texto", "etiqueta", "prediction") \
                 .withColumn("fecha_proceso", current_timestamp()) \
                 .write \
-                .format("mongodb") \
-                .mode("append") \
-                .option("writeConcern.w", "1") \
+                .format("com.mongodb.spark.sql.DefaultSource") \
+                .mode("overwrite") \
+                .option("database", "sentiment_db") \
+                .option("collection", "results") \
                 .save()
             print("--- ÉXITO: Datos guardados en MongoDB ---")
         else:
             print("ERROR: El DataFrame está vacío.")
             sys.exit(1)
 
+            
     except Exception as e:
         print(f"--- ERROR CRÍTICO ---: {str(e)}")
         sys.exit(1)
