@@ -9,7 +9,7 @@ pipeline {
         stage('Limpieza y Arranque') {
             steps {
                 echo 'Borrando rastros previos...'
-                sh 'docker compose down -v --remove-orphans'
+                sh 'docker compose down --remove-orphans'
                 sh 'docker compose up -d --build --force-recreate'
                 
                 echo 'Esperando a que Docker asigne nombres y rutas...'                

@@ -35,7 +35,16 @@ services:
       - .:/opt/spark/work-dir
     networks:
       - sentiment_network
-
+  jenkins:
+    build: .
+    container_name: sentiment_jenkins
+    ports:
+      - "8085:8080"
+    volumes:
+      - ./jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - sentiment_network
   spark-worker:
     image: apache/spark:3.5.0
     container_name: spark_worker
