@@ -11,8 +11,7 @@ pipeline {
                 sh "docker cp process_sentiment.py spark_master:/opt/spark/work-dir/process_sentiment.py"
                 sh "docker cp dataset_sentimientos_500.csv spark_master:/opt/spark/data/dataset_sentimientos_500.csv"
                 
-                // INSTALACIÓN FORZADA DE DEPENDENCIAS
-                // Usamos --user por si el usuario no es root, y nos aseguramos de que pip esté actualizado
+                // Instalación de dependencias
                 sh "docker exec -u root spark_master python3 -m pip install --upgrade pip"
                 sh "docker exec -u root spark_master python3 -m pip install numpy pandas"
                 
@@ -23,24 +22,25 @@ pipeline {
 
         stage('Ejecución') {
             steps {
-                echo "Ejecutando Spark..."
+                echo "Ejecutando proceso Batch (CSV)..."
                 sh """
                     docker exec spark_master /opt/spark/bin/spark-submit \
                     --master local[*] \
                     --packages org.mongodb.spark:mongo-spark-connector_2.12:10.4.0 \
                     /opt/spark/work-dir/process_sentiment.py
                 """
+                echo "¡Proceso finalizado!"
             }
         }
     }
-}
 
+    // El bloque post ahora está DENTRO de pipeline
     post {
         success {
             echo "¡Éxito! El proceso finalizó correctamente."
         }
         failure {
             echo "El pipeline falló."
-            echo "TIP: Ejecuta 'docker logs ${env.MASTER_CONTAINER}' para ver el error exacto de Spark."
         }
     }
+}
