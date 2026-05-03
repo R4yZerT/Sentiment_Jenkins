@@ -5,17 +5,19 @@ pipeline {
         SERVICE_NAME = "spark_master"
     }
 
-    stage('Limpieza y Arranque') {
-    steps {
-        echo 'Borrando rastros previos de forma forzada...'
-        sh 'docker compose down --remove-orphans || true'
-        sh 'docker ps -q --filter "name=spark_master" | xargs -r docker rm -f'
-        sh 'docker ps -q --filter "name=sentiment_mongo" | xargs -r docker rm -f'
-        sh 'docker ps -q --filter "name=sentiment_jenkins" | xargs -r docker rm -f'
-        echo 'Iniciando nuevo stack...'
-        sh 'docker compose up -d --build --force-recreate'
-    }
-}
+    stages { // <--- ESTO ES LO QUE TE FALTABA
+        stage('Limpieza y Arranque') {
+            steps {
+                echo 'Borrando rastros previos...'
+                sh 'docker compose down --remove-orphans || true'
+                // Forzamos limpieza profunda
+                sh 'docker ps -q --filter "name=spark_" | xargs -r docker rm -f'
+                sh 'docker ps -q --filter "name=sentiment_" | xargs -r docker rm -f'
+                
+                echo 'Iniciando nuevo stack...'
+                sh 'docker compose up -d --build --force-recreate'
+            }
+        }
 
         stage('Inyección de Datos y Dependencias') {
             steps {
@@ -65,4 +67,3 @@ pipeline {
         success { echo '¡Excelente! Todo fluyó correctamente.' }
         failure { echo 'Hubo un error. Verifica que el archivo CSV esté en la raíz de tu Git.' }
     }
-}
