@@ -42,21 +42,22 @@ def main():
         print(f"DEBUG: Filas procesadas: {count}")
 
         if count > 0:
-            # 2. Escribir usando el método directo de MongoSpark
+            # Usamos "mongodb" como formato para el conector 10.x
             predictions.select("texto", "etiqueta", "prediction") \
                 .withColumn("fecha_proceso", current_timestamp()) \
                 .write \
-                .format("com.mongodb.spark.sql.DefaultSource") \
+                .format("mongodb") \
                 .mode("overwrite") \
                 .option("database", "sentiment_db") \
                 .option("collection", "results") \
+                .option("writeConcern.w", "1") \
                 .save()
             print("--- ÉXITO: Datos guardados en MongoDB ---")
         else:
             print("ERROR: El DataFrame está vacío.")
             sys.exit(1)
 
-            
+
     except Exception as e:
         print(f"--- ERROR CRÍTICO ---: {str(e)}")
         sys.exit(1)
