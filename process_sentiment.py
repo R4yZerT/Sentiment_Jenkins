@@ -6,6 +6,7 @@ from pyspark.ml import Pipeline
 from pyspark.ml.feature import Tokenizer, StopWordsRemover, HashingTF, IDF, StringIndexer
 from pyspark.ml.classification import LogisticRegression
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator
+from pyspark.sql.functions import col
 
 def main():
     data_path = "/opt/spark/data/dataset_sentimientos_500.csv"
@@ -51,16 +52,25 @@ def main():
         accuracy = evaluator.evaluate(test_predictions)
         print(f"--- ACCURACY en test set: {accuracy:.4f} ({accuracy*100:.2f}%) ---")
 
+        # Obtener el mapeo de índices a etiquetas del StringIndexer
+        indexer_model = model.stages[4]  # StringIndexer es el stage 4
+        labels = indexer_model.labels    # ["negativo", "neutral", "positivo"] orden real
+
         # Predecir sobre todo el dataset para guardar en MongoDB
         all_predictions = model.transform(df)
         count = all_predictions.count()
         print(f"DEBUG: Filas procesadas: {count}")
+        print(f"DEBUG: Label mapping: {list(enumerate(labels))}")
 
         if count > 0:
-            all_predictions.select("texto", "etiqueta", "prediction") \
+            # Convertir prediction numérica a texto usando el mapeo real del modelo
+            from pyspark.ml.feature import IndexToString
+            converter = IndexToString(inputCol="prediction", outputCol="prediction_label", labels=labels)
+            all_predictions = converter.transform(all_predictions)
+
+            all_predictions.select("texto", "etiqueta", col("prediction_label").alias("prediction")) \
                 .withColumn("fecha_proceso", current_timestamp()) \
                 .withColumn("accuracy_test", lit(round(accuracy * 100, 2))) \
-                .withColumn("split", lit("full")) \
                 .write \
                 .format("mongodb") \
                 .mode("overwrite") \

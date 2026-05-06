@@ -21,7 +21,9 @@ def load_mongo():
     client.close()
     df = pd.DataFrame(docs)
     if "prediction" in df.columns:
-        df["prediction"] = df["prediction"].map(LABEL_MAP).fillna(df["prediction"].astype(str))
+        # Si viene como número (pipeline viejo), mapear; si ya es texto, dejarlo
+        if df["prediction"].dtype in ["int64", "float64"]:
+            df["prediction"] = df["prediction"].map(LABEL_MAP).fillna(df["prediction"].astype(str))
     else:
         df["prediction"] = "desconocido"
     if "fecha_proceso" in df.columns:
