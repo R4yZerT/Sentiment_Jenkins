@@ -4,7 +4,7 @@ from pyspark.sql.functions import current_timestamp, lit
 from pyspark.sql.types import StructType, StructField, StringType
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import Tokenizer, StopWordsRemover, HashingTF, IDF, StringIndexer
-from pyspark.ml.classification import LogisticRegression
+from pyspark.ml.classification import RandomForestClassifier
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 from pyspark.sql.functions import col
 
@@ -36,7 +36,7 @@ def main():
         hashingTF      = HashingTF(inputCol="filtered", outputCol="rawFeatures", numFeatures=1000)
         idf            = IDF(inputCol="rawFeatures", outputCol="features")
         label_stringIdx = StringIndexer(inputCol="etiqueta", outputCol="label")
-        lr             = LogisticRegression(maxIter=10, regParam=0.01)
+        lr             = RandomForestClassifier(numTrees=100, maxDepth=10)
 
         pipeline = Pipeline(stages=[tokenizer, remover, hashingTF, idf, label_stringIdx, lr])
 
