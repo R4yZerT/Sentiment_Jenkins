@@ -15,7 +15,7 @@ services:
     image: pipe-flask_api:latest
     container_name: sentiment_api
     ports:
-      - "5001:5000"
+      - "4001:4000"
     depends_on:
       - sentiment_mongo
     environment:
