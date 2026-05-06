@@ -36,9 +36,9 @@ services:
     environment:
       - MONGO_URI=mongodb://sentiment_mongo:27017/sentiment_db
       - API_URL=http://sentiment_api:5001
-      - ENRICHED_CSV=/data/dataset_enriquecido.csv
+      - ENRICHED_CSV=/data/dataset_final.csv
     volumes:
-      - ./dataset_enriquecido.csv:/data/dataset_enriquecido.csv:ro
+      - ./dataset_final.csv:/data/dataset_final.csv:ro
     networks:
       - sentiment_network
 

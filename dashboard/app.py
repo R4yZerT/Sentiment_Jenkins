@@ -11,7 +11,7 @@ LABEL_MAP = {0: "positivo", 1: "negativo", 2: "neutral"}
 COLOR_MAP = {"positivo": "#2ecc71", "negativo": "#e74c3c", "neutral": "#3498db"}
 MONGO_URI   = os.environ.get("MONGO_URI",    "mongodb://localhost:27017/sentiment_db")
 API_URL     = os.environ.get("API_URL",      "http://localhost:5001")
-ENRICHED    = os.environ.get("ENRICHED_CSV", "dataset_enriquecido.csv")
+ENRICHED    = os.environ.get("ENRICHED_CSV", "dataset_final.csv")
 
 
 @st.cache_data(ttl=30)

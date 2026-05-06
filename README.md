@@ -39,7 +39,7 @@ Jenkins (CI/CD)
 ├── process_sentiment.py        # Job de Spark: entrena modelo y guarda en MongoDB
 ├── prepare_dataset.py          # Script auxiliar: enriquece el CSV con IDs y fechas
 ├── dataset_sentimientos_500.csv # Dataset original (500 textos etiquetados)
-├── dataset_enriquecido.csv     # Dataset con IDs y fechas simuladas (Nov 2025 - Feb 2026)
+├── dataset_final.csv     # Dataset con IDs y fechas simuladas (Nov 2025 - Feb 2026)
 ├── app.py                      # API Flask simple (endpoint /resultados)
 ├── api/
 │   ├── app.py                  # API Flask completa (3 endpoints)
@@ -62,7 +62,7 @@ El archivo `dataset_sentimientos_500.csv` contiene 500 textos en inglés con su 
 | `texto` | Texto a clasificar |
 | `etiqueta` | Etiqueta real: `positivo`, `negativo`, `neutral` |
 
-El script `prepare_dataset.py` genera `dataset_enriquecido.csv` agregando:
+El script `prepare_dataset.py` genera `dataset_final.csv` agregando:
 - `id`: identificador único (1-500)
 - `fecha`: timestamp simulado distribuido entre Nov 2025 y Feb 2026
 
