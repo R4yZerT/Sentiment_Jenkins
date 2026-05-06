@@ -10,7 +10,8 @@ Pipeline de análisis de sentimientos con procesamiento batch en Apache Spark, o
 Jenkins (CI/CD)
     └── spark-submit process_sentiment.py
             ├── Lee dataset_sentimientos_500.csv
-            ├── Entrena modelo (TF-IDF + Logistic Regression)
+            ├── Split 70/30 train/test
+            ├── Entrena modelo (TF-IDF + Random Forest) → Accuracy ~--% en test set
             └── Escribe predicciones → MongoDB
                         ├── Flask API  (puerto 5001)
                         └── Dashboard  (puerto 8502)
@@ -73,17 +74,21 @@ El script `prepare_dataset.py` genera `dataset_final.csv` agregando:
 El job de Spark ejecuta el siguiente pipeline cada vez que Jenkins lo dispara:
 
 1. Lee `dataset_sentimientos_500.csv`
-2. Construye un pipeline de ML:
-   - `Tokenizer` → tokeniza el texto
-   - `StopWordsRemover` → elimina palabras vacías
+2. Divide el dataset en **50% train / 50% test** (seed=42 para reproducibilidad)
+3. Construye un pipeline de NLP + ML:
+   - `Tokenizer` → tokeniza el texto en palabras
+   - `StopWordsRemover` → elimina palabras vacías (the, is, a...)
    - `HashingTF` → vectorización (1000 features)
-   - `IDF` → ponderación por frecuencia inversa
-   - `StringIndexer` → convierte etiquetas a números
-   - `LogisticRegression` → clasificador
-3. Entrena el modelo con todo el dataset
-4. Genera predicciones y las guarda en MongoDB (`sentiment_db.results`)
+   - `IDF` → pondera las palabras más informativas
+   - `StringIndexer` → convierte etiquetas a números (negativo=0, neutral=1, positivo=2)
+   - `RandomForestClassifier` → clasificador con 100 árboles, profundidad máxima 10
+4. Entrena el modelo **solo con el set de train**
+5. Evalúa el modelo sobre el **set de test** → **Accuracy ~93%**
+6. Predice sobre todo el dataset y guarda en MongoDB:
+   - `sentiment_db.results` → predicciones con etiqueta en texto (positivo/negativo/neutral)
+   - `sentiment_db.metrics` → accuracy, train size y test size del último run
 
-> **Nota:** El modelo se entrena de nuevo en cada ejecución del pipeline. No se persiste en disco.
+> **Nota:** El modelo se entrena de nuevo en cada ejecución. Las métricas reales del test set se guardan en MongoDB y se muestran en el dashboard.
 
 ---
 

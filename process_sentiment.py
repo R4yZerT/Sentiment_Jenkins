@@ -26,8 +26,8 @@ def main():
     try:
         df = spark.read.option("header", "true").schema(schema).csv(data_path).dropna()
 
-        # Split 50/50
-        train_df, test_df = df.randomSplit([0.5, 0.5], seed=42)
+        # Split 70/30
+        train_df, test_df = df.randomSplit([0.7, 0.3], seed=42)
         print(f"DEBUG: Train={train_df.count()} | Test={test_df.count()}")
 
         # Pipeline de ML
