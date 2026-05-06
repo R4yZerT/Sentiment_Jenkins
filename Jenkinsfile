@@ -20,6 +20,13 @@ pipeline {
             }
         }
 
+        stage('Limpieza MongoDB') {
+            steps {
+                echo "Limpiando colección results en MongoDB..."
+                sh "docker exec sentiment_mongo mongosh sentiment_db --eval 'db.results.deleteMany({})'"
+            }
+        }
+
         stage('Ejecución') {
             steps {
                 echo "Ejecutando proceso Batch (CSV)..."
