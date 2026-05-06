@@ -11,15 +11,34 @@ services:
 
   flask_api:
     build:
-      context: .
-    image: pipe-flask_api:latest
+      context: ./api
     container_name: sentiment_api
     ports:
-      - "4001:4000"
+      - "5001:5001"
     depends_on:
       - sentiment_mongo
     environment:
       - MONGO_URI=mongodb://sentiment_mongo:27017/sentiment_db
+      - DATA_PATH=/app/data/dataset_sentimientos_500.csv
+    volumes:
+      - ./dataset_sentimientos_500.csv:/app/data/dataset_sentimientos_500.csv:ro
+    networks:
+      - sentiment_network
+
+  dashboard:
+    build:
+      context: ./dashboard
+    container_name: sentiment_dashboard
+    ports:
+      - "8502:8501"
+    depends_on:
+      - flask_api
+    environment:
+      - MONGO_URI=mongodb://sentiment_mongo:27017/sentiment_db
+      - API_URL=http://sentiment_api:5001
+      - ENRICHED_CSV=/data/dataset_enriquecido.csv
+    volumes:
+      - ./dataset_enriquecido.csv:/data/dataset_enriquecido.csv:ro
     networks:
       - sentiment_network
 
@@ -36,6 +55,17 @@ services:
       - .:/opt/spark/work-dir
     networks:
       - sentiment_network
+
+  spark-worker:
+    image: apache/spark:3.5.0
+    container_name: spark_worker
+    user: root
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+    depends_on:
+      - spark-master
+    networks:
+      - sentiment_network
+
   jenkins:
     build: .
     container_name: sentiment_jenkins
@@ -44,15 +74,6 @@ services:
     volumes:
       - ./jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - sentiment_network
-  spark-worker:
-    image: apache/spark:3.5.0
-    container_name: spark_worker
-    user: root
-    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
-    depends_on:
-      - spark-master
     networks:
       - sentiment_network
 

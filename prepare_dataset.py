@@ -22,7 +22,7 @@ timestamps = sorted([
 df['fecha'] = timestamps
 
 # 4. Reordenar columnas
-df = df[['id', 'texto', 'sentimiento', 'fecha']]
+df = df[['id', 'texto', 'etiqueta', 'fecha']]
 
 # 5. Guardar
 df.to_csv('dataset_enriquecido.csv', index=False)

@@ -1,0 +1,503 @@
+id,texto,etiqueta,fecha
+1,Amazing experience with the service,positivo,2025-11-01 00:06:43
+2,I would not recommend it,negativo,2025-11-01 04:07:51
+3,The file was uploaded successfully,neutral,2025-11-01 05:41:53
+4,Highly recommend this tool,positivo,2025-11-01 08:06:35
+5,Poor customer service,negativo,2025-11-01 11:32:55
+6,Documentation has been updated,neutral,2025-11-01 13:01:52
+7,Highly recommend this tool,positivo,2025-11-01 14:08:16
+8,Terrible experience,negativo,2025-11-01 14:10:04
+9,System maintenance will occur tonight,neutral,2025-11-01 16:13:53
+10,Great support from the team,positivo,2025-11-01 19:22:57
+11,Too many bugs and errors,negativo,2025-11-01 22:43:08
+12,Version 2.1 is now available,neutral,2025-11-01 23:50:15
+13,I love this product,positivo,2025-11-02 03:42:04
+14,It made my work harder,negativo,2025-11-02 10:21:21
+15,The project deadline is next Monday,neutral,2025-11-02 11:20:09
+16,Amazing experience with the service,positivo,2025-11-02 11:31:04
+17,Very disappointed with the performance,negativo,2025-11-02 11:39:36
+18,The meeting is scheduled for 10 AM,neutral,2025-11-02 16:44:01
+19,Truly a game changer,positivo,2025-11-02 16:49:46
+20,Extremely slow and unresponsive,negativo,2025-11-03 00:22:55
+21,Documentation has been updated,neutral,2025-11-03 01:30:44
+22,Everything works perfectly,positivo,2025-11-03 01:45:32
+23,Extremely slow and unresponsive,negativo,2025-11-03 13:08:31
+24,System maintenance will occur tonight,neutral,2025-11-04 12:22:27
+25,Highly recommend this tool,positivo,2025-11-04 22:43:20
+26,This is the worst tool I've used,negativo,2025-11-05 00:47:26
+27,The file was uploaded successfully,neutral,2025-11-05 03:21:03
+28,Very satisfied with the quality,positivo,2025-11-05 06:04:18
+29,I would not recommend it,negativo,2025-11-06 03:46:10
+30,User logged in from a new device,neutral,2025-11-06 03:55:40
+31,Truly a game changer,positivo,2025-11-06 04:12:47
+32,Keeps crashing every time,negativo,2025-11-06 11:36:42
+33,System maintenance will occur tonight,neutral,2025-11-06 15:02:49
+34,The performance is outstanding,positivo,2025-11-06 23:26:40
+35,It made my work harder,negativo,2025-11-06 23:39:09
+36,Documentation has been updated,neutral,2025-11-07 00:52:01
+37,The performance is outstanding,positivo,2025-11-07 02:48:44
+38,Too many bugs and errors,negativo,2025-11-07 02:50:37
+39,The server uptime is 99.9%,neutral,2025-11-07 05:28:47
+40,Excellent usability and speed,positivo,2025-11-07 10:55:49
+41,Extremely slow and unresponsive,negativo,2025-11-07 15:25:48
+42,This update includes bug fixes,neutral,2025-11-07 17:32:55
+43,Everything works perfectly,positivo,2025-11-07 20:34:01
+44,Very disappointed with the performance,negativo,2025-11-07 22:34:56
+45,The file was uploaded successfully,neutral,2025-11-08 02:30:51
+46,Highly recommend this tool,positivo,2025-11-08 12:41:14
+47,Not user friendly at all,negativo,2025-11-08 13:50:02
+48,No major changes were introduced,neutral,2025-11-08 19:59:27
+49,Everything works perfectly,positivo,2025-11-08 20:05:43
+50,This is the worst tool I've used,negativo,2025-11-08 20:39:39
+51,No major changes were introduced,neutral,2025-11-08 22:38:03
+52,Great support from the team,positivo,2025-11-09 13:03:24
+53,Too many bugs and errors,negativo,2025-11-09 14:04:04
+54,Version 2.1 is now available,neutral,2025-11-09 15:04:31
+55,Amazing experience with the service,positivo,2025-11-09 17:58:04
+56,Not user friendly at all,negativo,2025-11-09 20:15:01
+57,Documentation has been updated,neutral,2025-11-10 00:52:43
+58,Highly recommend this tool,positivo,2025-11-10 00:59:50
+59,Terrible experience,negativo,2025-11-10 03:42:30
+60,Version 2.1 is now available,neutral,2025-11-10 04:44:51
+61,Very satisfied with the quality,positivo,2025-11-10 07:54:38
+62,Extremely slow and unresponsive,negativo,2025-11-10 08:50:37
+63,No major changes were introduced,neutral,2025-11-10 13:40:17
+64,Very satisfied with the quality,positivo,2025-11-10 17:28:44
+65,It made my work harder,negativo,2025-11-11 00:53:09
+66,The project deadline is next Monday,neutral,2025-11-11 04:01:06
+67,I love this product,positivo,2025-11-11 05:11:36
+68,Extremely slow and unresponsive,negativo,2025-11-11 05:30:58
+69,The meeting is scheduled for 10 AM,neutral,2025-11-11 05:33:16
+70,Amazing experience with the service,positivo,2025-11-11 05:34:37
+71,Very disappointed with the performance,negativo,2025-11-11 13:07:01
+72,Version 2.1 is now available,neutral,2025-11-11 18:18:28
+73,Truly a game changer,positivo,2025-11-11 22:03:54
+74,I would not recommend it,negativo,2025-11-11 22:37:33
+75,Documentation has been updated,neutral,2025-11-12 04:51:43
+76,Great support from the team,positivo,2025-11-12 09:36:33
+77,This is the worst tool I've used,negativo,2025-11-12 13:50:50
+78,The server uptime is 99.9%,neutral,2025-11-12 19:05:26
+79,Everything works perfectly,positivo,2025-11-12 20:26:11
+80,Not user friendly at all,negativo,2025-11-13 08:24:50
+81,The file was uploaded successfully,neutral,2025-11-14 00:04:08
+82,Truly a game changer,positivo,2025-11-14 00:57:59
+83,It made my work harder,negativo,2025-11-14 02:45:36
+84,No major changes were introduced,neutral,2025-11-14 04:19:31
+85,The performance is outstanding,positivo,2025-11-14 06:58:45
+86,It made my work harder,negativo,2025-11-14 20:58:47
+87,The server uptime is 99.9%,neutral,2025-11-14 21:05:45
+88,Very satisfied with the quality,positivo,2025-11-14 23:21:49
+89,Not user friendly at all,negativo,2025-11-15 09:03:33
+90,This update includes bug fixes,neutral,2025-11-15 11:37:13
+91,Highly recommend this tool,positivo,2025-11-15 16:06:46
+92,Extremely slow and unresponsive,negativo,2025-11-15 20:07:55
+93,This update includes bug fixes,neutral,2025-11-16 03:15:47
+94,Truly a game changer,positivo,2025-11-16 08:27:44
+95,I would not recommend it,negativo,2025-11-16 09:05:58
+96,This update includes bug fixes,neutral,2025-11-16 15:28:03
+97,Highly recommend this tool,positivo,2025-11-16 19:24:37
+98,It made my work harder,negativo,2025-11-16 19:41:53
+99,System maintenance will occur tonight,neutral,2025-11-16 23:43:20
+100,Very satisfied with the quality,positivo,2025-11-17 02:27:35
+101,Not user friendly at all,negativo,2025-11-17 02:29:16
+102,The server uptime is 99.9%,neutral,2025-11-17 03:28:41
+103,Truly a game changer,positivo,2025-11-17 12:11:47
+104,Very disappointed with the performance,negativo,2025-11-17 12:38:51
+105,Documentation has been updated,neutral,2025-11-17 15:12:27
+106,This platform helped me grow,positivo,2025-11-17 19:10:45
+107,It made my work harder,negativo,2025-11-18 01:26:24
+108,This update includes bug fixes,neutral,2025-11-18 03:59:52
+109,Amazing experience with the service,positivo,2025-11-18 21:27:40
+110,Extremely slow and unresponsive,negativo,2025-11-18 22:28:26
+111,Documentation has been updated,neutral,2025-11-19 07:02:55
+112,Amazing experience with the service,positivo,2025-11-20 00:46:14
+113,I would not recommend it,negativo,2025-11-20 06:57:49
+114,The server uptime is 99.9%,neutral,2025-11-20 14:24:21
+115,Excellent usability and speed,positivo,2025-11-20 15:52:18
+116,Extremely slow and unresponsive,negativo,2025-11-20 16:06:26
+117,User logged in from a new device,neutral,2025-11-20 20:26:39
+118,Truly a game changer,positivo,2025-11-20 23:42:40
+119,This is the worst tool I've used,negativo,2025-11-21 02:39:22
+120,System maintenance will occur tonight,neutral,2025-11-21 05:12:20
+121,Truly a game changer,positivo,2025-11-21 22:14:42
+122,Terrible experience,negativo,2025-11-22 11:58:44
+123,Documentation has been updated,neutral,2025-11-22 20:19:22
+124,The performance is outstanding,positivo,2025-11-23 06:10:44
+125,It made my work harder,negativo,2025-11-23 10:45:55
+126,Version 2.1 is now available,neutral,2025-11-23 15:47:12
+127,I love this product,positivo,2025-11-23 23:46:10
+128,Extremely slow and unresponsive,negativo,2025-11-24 03:09:16
+129,Version 2.1 is now available,neutral,2025-11-24 07:04:25
+130,Excellent usability and speed,positivo,2025-11-24 07:53:03
+131,Extremely slow and unresponsive,negativo,2025-11-24 07:53:43
+132,Version 2.1 is now available,neutral,2025-11-24 10:49:50
+133,Everything works perfectly,positivo,2025-11-24 14:18:38
+134,Poor customer service,negativo,2025-11-25 15:58:49
+135,User logged in from a new device,neutral,2025-11-25 17:56:31
+136,Highly recommend this tool,positivo,2025-11-25 23:16:19
+137,I would not recommend it,negativo,2025-11-25 23:36:58
+138,The file was uploaded successfully,neutral,2025-11-26 14:07:45
+139,Everything works perfectly,positivo,2025-11-26 16:22:38
+140,Extremely slow and unresponsive,negativo,2025-11-26 18:18:52
+141,The meeting is scheduled for 10 AM,neutral,2025-11-26 18:56:24
+142,Truly a game changer,positivo,2025-11-26 19:24:48
+143,Terrible experience,negativo,2025-11-27 13:36:21
+144,This update includes bug fixes,neutral,2025-11-27 16:36:46
+145,Excellent usability and speed,positivo,2025-11-27 18:15:51
+146,This is the worst tool I've used,negativo,2025-11-27 20:37:20
+147,The file was uploaded successfully,neutral,2025-11-27 21:00:46
+148,The performance is outstanding,positivo,2025-11-28 21:24:03
+149,It made my work harder,negativo,2025-11-29 02:54:36
+150,User logged in from a new device,neutral,2025-11-29 07:31:57
+151,I love this product,positivo,2025-11-29 12:24:21
+152,Poor customer service,negativo,2025-11-29 16:01:45
+153,No major changes were introduced,neutral,2025-11-29 20:13:57
+154,Truly a game changer,positivo,2025-11-29 21:18:40
+155,Poor customer service,negativo,2025-11-30 07:25:53
+156,The project deadline is next Monday,neutral,2025-11-30 09:08:16
+157,The performance is outstanding,positivo,2025-11-30 10:11:13
+158,Poor customer service,negativo,2025-11-30 20:00:32
+159,System maintenance will occur tonight,neutral,2025-11-30 22:43:58
+160,The performance is outstanding,positivo,2025-11-30 22:53:53
+161,Very disappointed with the performance,negativo,2025-12-01 03:57:14
+162,The meeting is scheduled for 10 AM,neutral,2025-12-01 04:03:21
+163,I love this product,positivo,2025-12-01 09:28:25
+164,It made my work harder,negativo,2025-12-01 21:09:50
+165,No major changes were introduced,neutral,2025-12-02 03:57:39
+166,This platform helped me grow,positivo,2025-12-02 06:54:20
+167,Not user friendly at all,negativo,2025-12-02 17:38:56
+168,User logged in from a new device,neutral,2025-12-02 20:45:46
+169,The performance is outstanding,positivo,2025-12-02 21:42:30
+170,Very disappointed with the performance,negativo,2025-12-03 02:57:54
+171,The project deadline is next Monday,neutral,2025-12-03 07:47:32
+172,Highly recommend this tool,positivo,2025-12-03 08:21:06
+173,Keeps crashing every time,negativo,2025-12-03 13:40:36
+174,Version 2.1 is now available,neutral,2025-12-03 14:00:05
+175,Great support from the team,positivo,2025-12-03 22:09:31
+176,Very disappointed with the performance,negativo,2025-12-04 01:56:48
+177,Version 2.1 is now available,neutral,2025-12-04 08:57:50
+178,The performance is outstanding,positivo,2025-12-04 13:12:35
+179,Very disappointed with the performance,negativo,2025-12-04 13:28:02
+180,The file was uploaded successfully,neutral,2025-12-04 17:24:04
+181,Excellent usability and speed,positivo,2025-12-04 19:47:34
+182,Very disappointed with the performance,negativo,2025-12-05 05:07:44
+183,User logged in from a new device,neutral,2025-12-05 06:17:14
+184,This platform helped me grow,positivo,2025-12-05 12:35:16
+185,I would not recommend it,negativo,2025-12-05 19:31:29
+186,No major changes were introduced,neutral,2025-12-05 23:19:10
+187,Everything works perfectly,positivo,2025-12-06 07:07:35
+188,It made my work harder,negativo,2025-12-06 07:10:54
+189,The meeting is scheduled for 10 AM,neutral,2025-12-06 13:22:11
+190,Truly a game changer,positivo,2025-12-06 20:14:46
+191,This is the worst tool I've used,negativo,2025-12-07 05:50:48
+192,Documentation has been updated,neutral,2025-12-07 11:27:12
+193,Very satisfied with the quality,positivo,2025-12-07 11:30:57
+194,Terrible experience,negativo,2025-12-07 15:57:36
+195,Version 2.1 is now available,neutral,2025-12-07 18:18:46
+196,Everything works perfectly,positivo,2025-12-07 18:23:57
+197,Not user friendly at all,negativo,2025-12-08 00:41:15
+198,The server uptime is 99.9%,neutral,2025-12-08 06:55:24
+199,Great support from the team,positivo,2025-12-08 07:13:54
+200,Very disappointed with the performance,negativo,2025-12-08 15:26:02
+201,The project deadline is next Monday,neutral,2025-12-08 16:50:12
+202,Great support from the team,positivo,2025-12-08 18:56:38
+203,It made my work harder,negativo,2025-12-08 19:19:07
+204,No major changes were introduced,neutral,2025-12-08 20:09:10
+205,The performance is outstanding,positivo,2025-12-08 23:10:08
+206,It made my work harder,negativo,2025-12-09 01:15:38
+207,The project deadline is next Monday,neutral,2025-12-09 08:13:07
+208,Highly recommend this tool,positivo,2025-12-10 07:03:00
+209,Poor customer service,negativo,2025-12-10 18:47:15
+210,No major changes were introduced,neutral,2025-12-10 22:25:12
+211,This platform helped me grow,positivo,2025-12-10 23:39:10
+212,Not user friendly at all,negativo,2025-12-11 02:51:30
+213,System maintenance will occur tonight,neutral,2025-12-11 08:46:48
+214,Highly recommend this tool,positivo,2025-12-11 12:10:35
+215,This is the worst tool I've used,negativo,2025-12-11 12:53:42
+216,This update includes bug fixes,neutral,2025-12-11 14:03:30
+217,Highly recommend this tool,positivo,2025-12-11 16:57:10
+218,Keeps crashing every time,negativo,2025-12-11 19:34:13
+219,Documentation has been updated,neutral,2025-12-11 21:32:07
+220,Great support from the team,positivo,2025-12-12 00:16:01
+221,Too many bugs and errors,negativo,2025-12-12 01:00:33
+222,System maintenance will occur tonight,neutral,2025-12-12 02:33:29
+223,Everything works perfectly,positivo,2025-12-12 07:53:07
+224,It made my work harder,negativo,2025-12-12 17:53:07
+225,The server uptime is 99.9%,neutral,2025-12-12 19:30:50
+226,This platform helped me grow,positivo,2025-12-12 19:35:18
+227,Poor customer service,negativo,2025-12-13 03:18:13
+228,This update includes bug fixes,neutral,2025-12-13 05:58:12
+229,Excellent usability and speed,positivo,2025-12-13 07:21:14
+230,Not user friendly at all,negativo,2025-12-13 09:42:40
+231,The server uptime is 99.9%,neutral,2025-12-13 12:09:37
+232,Very satisfied with the quality,positivo,2025-12-13 13:18:04
+233,Too many bugs and errors,negativo,2025-12-13 18:56:41
+234,The file was uploaded successfully,neutral,2025-12-13 23:11:07
+235,The performance is outstanding,positivo,2025-12-14 00:59:35
+236,I would not recommend it,negativo,2025-12-14 09:37:03
+237,The meeting is scheduled for 10 AM,neutral,2025-12-14 10:43:40
+238,Highly recommend this tool,positivo,2025-12-14 12:03:22
+239,I would not recommend it,negativo,2025-12-14 14:56:37
+240,The project deadline is next Monday,neutral,2025-12-15 00:49:43
+241,Amazing experience with the service,positivo,2025-12-15 08:06:53
+242,Not user friendly at all,negativo,2025-12-15 09:37:52
+243,User logged in from a new device,neutral,2025-12-15 11:46:32
+244,This platform helped me grow,positivo,2025-12-15 15:09:41
+245,Not user friendly at all,negativo,2025-12-15 15:59:36
+246,The file was uploaded successfully,neutral,2025-12-15 19:33:44
+247,Everything works perfectly,positivo,2025-12-16 06:19:26
+248,Not user friendly at all,negativo,2025-12-16 13:26:37
+249,Documentation has been updated,neutral,2025-12-17 07:10:28
+250,Amazing experience with the service,positivo,2025-12-17 08:22:54
+251,Too many bugs and errors,negativo,2025-12-17 11:44:07
+252,Documentation has been updated,neutral,2025-12-17 13:51:14
+253,This platform helped me grow,positivo,2025-12-17 14:46:01
+254,This is the worst tool I've used,negativo,2025-12-17 15:07:02
+255,System maintenance will occur tonight,neutral,2025-12-17 21:18:06
+256,The performance is outstanding,positivo,2025-12-18 02:52:56
+257,Poor customer service,negativo,2025-12-18 07:06:48
+258,No major changes were introduced,neutral,2025-12-18 08:42:26
+259,Truly a game changer,positivo,2025-12-18 09:00:22
+260,Keeps crashing every time,negativo,2025-12-18 09:40:28
+261,The server uptime is 99.9%,neutral,2025-12-18 15:30:52
+262,Amazing experience with the service,positivo,2025-12-18 16:27:18
+263,Extremely slow and unresponsive,negativo,2025-12-18 17:14:56
+264,No major changes were introduced,neutral,2025-12-18 22:22:16
+265,Excellent usability and speed,positivo,2025-12-18 23:20:09
+266,Too many bugs and errors,negativo,2025-12-19 10:17:47
+267,The project deadline is next Monday,neutral,2025-12-19 19:44:02
+268,Very satisfied with the quality,positivo,2025-12-19 19:51:56
+269,Too many bugs and errors,negativo,2025-12-19 21:27:27
+270,No major changes were introduced,neutral,2025-12-19 23:38:17
+271,Amazing experience with the service,positivo,2025-12-20 00:58:42
+272,Keeps crashing every time,negativo,2025-12-20 08:36:05
+273,No major changes were introduced,neutral,2025-12-20 12:57:51
+274,I love this product,positivo,2025-12-20 21:57:38
+275,Not user friendly at all,negativo,2025-12-21 04:34:04
+276,The file was uploaded successfully,neutral,2025-12-21 09:25:22
+277,Everything works perfectly,positivo,2025-12-21 22:42:04
+278,Terrible experience,negativo,2025-12-22 01:46:50
+279,The meeting is scheduled for 10 AM,neutral,2025-12-22 05:52:55
+280,Amazing experience with the service,positivo,2025-12-22 09:18:20
+281,Keeps crashing every time,negativo,2025-12-22 09:38:32
+282,User logged in from a new device,neutral,2025-12-22 12:18:16
+283,Great support from the team,positivo,2025-12-23 00:34:50
+284,Terrible experience,negativo,2025-12-23 00:58:58
+285,Documentation has been updated,neutral,2025-12-23 01:59:54
+286,The performance is outstanding,positivo,2025-12-23 05:25:55
+287,Keeps crashing every time,negativo,2025-12-23 06:05:03
+288,System maintenance will occur tonight,neutral,2025-12-23 07:14:39
+289,Highly recommend this tool,positivo,2025-12-23 10:22:24
+290,It made my work harder,negativo,2025-12-23 12:42:23
+291,System maintenance will occur tonight,neutral,2025-12-23 20:27:00
+292,Great support from the team,positivo,2025-12-23 22:51:03
+293,Keeps crashing every time,negativo,2025-12-23 23:28:58
+294,Version 2.1 is now available,neutral,2025-12-24 20:32:06
+295,This platform helped me grow,positivo,2025-12-24 22:48:27
+296,Very disappointed with the performance,negativo,2025-12-25 06:05:15
+297,The meeting is scheduled for 10 AM,neutral,2025-12-25 09:57:52
+298,The performance is outstanding,positivo,2025-12-25 11:48:35
+299,Not user friendly at all,negativo,2025-12-25 14:09:56
+300,System maintenance will occur tonight,neutral,2025-12-25 15:44:29
+301,Amazing experience with the service,positivo,2025-12-25 23:03:39
+302,Extremely slow and unresponsive,negativo,2025-12-26 18:14:45
+303,User logged in from a new device,neutral,2025-12-26 19:01:41
+304,I love this product,positivo,2025-12-26 20:12:59
+305,Poor customer service,negativo,2025-12-26 22:12:11
+306,The project deadline is next Monday,neutral,2025-12-26 22:49:39
+307,I love this product,positivo,2025-12-27 04:36:20
+308,This is the worst tool I've used,negativo,2025-12-27 04:43:31
+309,User logged in from a new device,neutral,2025-12-27 09:47:34
+310,Truly a game changer,positivo,2025-12-27 17:24:24
+311,Extremely slow and unresponsive,negativo,2025-12-27 20:30:59
+312,Documentation has been updated,neutral,2025-12-28 03:03:45
+313,Highly recommend this tool,positivo,2025-12-28 14:11:02
+314,I would not recommend it,negativo,2025-12-28 18:29:06
+315,This update includes bug fixes,neutral,2025-12-28 21:24:31
+316,Truly a game changer,positivo,2025-12-28 21:55:35
+317,Keeps crashing every time,negativo,2025-12-29 04:52:24
+318,User logged in from a new device,neutral,2025-12-29 05:58:34
+319,I love this product,positivo,2025-12-29 11:47:30
+320,Poor customer service,negativo,2025-12-29 14:50:46
+321,The project deadline is next Monday,neutral,2025-12-29 15:34:47
+322,Amazing experience with the service,positivo,2025-12-29 20:59:26
+323,Too many bugs and errors,negativo,2025-12-29 21:30:00
+324,Version 2.1 is now available,neutral,2025-12-30 01:58:05
+325,Great support from the team,positivo,2025-12-30 08:58:53
+326,Too many bugs and errors,negativo,2025-12-31 14:42:54
+327,This update includes bug fixes,neutral,2025-12-31 19:57:56
+328,Excellent usability and speed,positivo,2025-12-31 23:31:17
+329,This is the worst tool I've used,negativo,2026-01-01 04:43:11
+330,The file was uploaded successfully,neutral,2026-01-01 05:08:59
+331,Highly recommend this tool,positivo,2026-01-01 06:44:01
+332,It made my work harder,negativo,2026-01-01 23:31:23
+333,The project deadline is next Monday,neutral,2026-01-02 05:05:34
+334,I love this product,positivo,2026-01-02 07:06:37
+335,Very disappointed with the performance,negativo,2026-01-02 12:40:54
+336,This update includes bug fixes,neutral,2026-01-02 21:18:26
+337,Everything works perfectly,positivo,2026-01-02 22:39:55
+338,Keeps crashing every time,negativo,2026-01-03 00:14:03
+339,The server uptime is 99.9%,neutral,2026-01-03 00:47:47
+340,Excellent usability and speed,positivo,2026-01-03 04:25:36
+341,It made my work harder,negativo,2026-01-03 08:29:42
+342,System maintenance will occur tonight,neutral,2026-01-03 20:35:29
+343,Amazing experience with the service,positivo,2026-01-04 07:36:10
+344,Terrible experience,negativo,2026-01-04 08:54:06
+345,The server uptime is 99.9%,neutral,2026-01-04 15:39:32
+346,The performance is outstanding,positivo,2026-01-04 17:15:44
+347,Not user friendly at all,negativo,2026-01-05 04:03:52
+348,The file was uploaded successfully,neutral,2026-01-05 07:24:02
+349,Highly recommend this tool,positivo,2026-01-05 07:28:01
+350,Poor customer service,negativo,2026-01-05 10:29:44
+351,The file was uploaded successfully,neutral,2026-01-05 12:02:17
+352,I love this product,positivo,2026-01-05 13:39:59
+353,Too many bugs and errors,negativo,2026-01-05 15:29:27
+354,The server uptime is 99.9%,neutral,2026-01-05 18:12:45
+355,Excellent usability and speed,positivo,2026-01-05 23:03:26
+356,Very disappointed with the performance,negativo,2026-01-06 01:01:13
+357,User logged in from a new device,neutral,2026-01-06 01:54:35
+358,Highly recommend this tool,positivo,2026-01-06 05:19:10
+359,Terrible experience,negativo,2026-01-06 13:53:32
+360,User logged in from a new device,neutral,2026-01-06 15:20:27
+361,This platform helped me grow,positivo,2026-01-06 22:08:14
+362,Keeps crashing every time,negativo,2026-01-06 23:00:20
+363,Version 2.1 is now available,neutral,2026-01-06 23:37:42
+364,I love this product,positivo,2026-01-07 02:13:34
+365,Very disappointed with the performance,negativo,2026-01-07 03:59:25
+366,Documentation has been updated,neutral,2026-01-07 04:09:06
+367,Highly recommend this tool,positivo,2026-01-07 04:58:40
+368,Very disappointed with the performance,negativo,2026-01-07 12:12:57
+369,The project deadline is next Monday,neutral,2026-01-07 13:24:07
+370,I love this product,positivo,2026-01-07 13:37:46
+371,Very disappointed with the performance,negativo,2026-01-07 14:10:41
+372,Documentation has been updated,neutral,2026-01-07 17:39:22
+373,Great support from the team,positivo,2026-01-07 18:37:16
+374,Not user friendly at all,negativo,2026-01-07 23:23:43
+375,System maintenance will occur tonight,neutral,2026-01-07 23:36:26
+376,Amazing experience with the service,positivo,2026-01-08 07:07:21
+377,Very disappointed with the performance,negativo,2026-01-08 08:30:35
+378,System maintenance will occur tonight,neutral,2026-01-08 10:06:58
+379,This platform helped me grow,positivo,2026-01-08 13:51:59
+380,I would not recommend it,negativo,2026-01-08 18:07:42
+381,Documentation has been updated,neutral,2026-01-08 18:12:16
+382,Amazing experience with the service,positivo,2026-01-08 20:05:20
+383,Too many bugs and errors,negativo,2026-01-09 06:04:31
+384,Version 2.1 is now available,neutral,2026-01-09 06:35:10
+385,Excellent usability and speed,positivo,2026-01-09 10:10:46
+386,I would not recommend it,negativo,2026-01-09 11:51:10
+387,Version 2.1 is now available,neutral,2026-01-09 23:30:54
+388,Very satisfied with the quality,positivo,2026-01-10 08:04:35
+389,I would not recommend it,negativo,2026-01-10 12:11:53
+390,Documentation has been updated,neutral,2026-01-11 01:51:11
+391,Everything works perfectly,positivo,2026-01-11 04:44:09
+392,Extremely slow and unresponsive,negativo,2026-01-11 07:16:48
+393,The meeting is scheduled for 10 AM,neutral,2026-01-11 09:16:00
+394,Amazing experience with the service,positivo,2026-01-11 14:03:54
+395,Terrible experience,negativo,2026-01-11 17:41:27
+396,The file was uploaded successfully,neutral,2026-01-11 19:16:51
+397,Highly recommend this tool,positivo,2026-01-12 05:31:40
+398,Terrible experience,negativo,2026-01-12 15:45:19
+399,The meeting is scheduled for 10 AM,neutral,2026-01-12 17:47:46
+400,I love this product,positivo,2026-01-12 23:39:02
+401,Keeps crashing every time,negativo,2026-01-13 00:49:03
+402,The server uptime is 99.9%,neutral,2026-01-13 13:14:08
+403,This platform helped me grow,positivo,2026-01-13 15:26:07
+404,Extremely slow and unresponsive,negativo,2026-01-13 21:02:45
+405,The meeting is scheduled for 10 AM,neutral,2026-01-13 22:04:55
+406,The performance is outstanding,positivo,2026-01-13 22:24:13
+407,I would not recommend it,negativo,2026-01-13 23:37:33
+408,This update includes bug fixes,neutral,2026-01-14 11:44:03
+409,Highly recommend this tool,positivo,2026-01-14 15:14:10
+410,Extremely slow and unresponsive,negativo,2026-01-14 20:39:05
+411,Documentation has been updated,neutral,2026-01-14 23:34:37
+412,Great support from the team,positivo,2026-01-15 03:07:36
+413,I would not recommend it,negativo,2026-01-15 09:30:03
+414,Documentation has been updated,neutral,2026-01-15 20:55:38
+415,Amazing experience with the service,positivo,2026-01-16 05:58:25
+416,Keeps crashing every time,negativo,2026-01-16 07:06:35
+417,The file was uploaded successfully,neutral,2026-01-16 13:58:34
+418,This platform helped me grow,positivo,2026-01-16 16:21:49
+419,Extremely slow and unresponsive,negativo,2026-01-16 18:25:45
+420,No major changes were introduced,neutral,2026-01-16 22:12:07
+421,This platform helped me grow,positivo,2026-01-17 02:31:17
+422,It made my work harder,negativo,2026-01-17 03:28:36
+423,No major changes were introduced,neutral,2026-01-17 13:07:36
+424,Great support from the team,positivo,2026-01-17 16:43:37
+425,I would not recommend it,negativo,2026-01-17 18:47:04
+426,This update includes bug fixes,neutral,2026-01-17 23:03:26
+427,Very satisfied with the quality,positivo,2026-01-18 00:00:34
+428,Too many bugs and errors,negativo,2026-01-18 00:06:27
+429,The file was uploaded successfully,neutral,2026-01-18 01:30:05
+430,I love this product,positivo,2026-01-18 04:24:42
+431,Very disappointed with the performance,negativo,2026-01-18 10:08:28
+432,System maintenance will occur tonight,neutral,2026-01-18 11:29:08
+433,Great support from the team,positivo,2026-01-18 15:04:09
+434,Too many bugs and errors,negativo,2026-01-19 19:22:43
+435,Documentation has been updated,neutral,2026-01-20 05:42:55
+436,Truly a game changer,positivo,2026-01-20 09:01:56
+437,It made my work harder,negativo,2026-01-20 11:37:14
+438,This update includes bug fixes,neutral,2026-01-20 16:46:42
+439,Everything works perfectly,positivo,2026-01-20 19:25:16
+440,Very disappointed with the performance,negativo,2026-01-21 06:20:18
+441,The project deadline is next Monday,neutral,2026-01-21 14:17:23
+442,Very satisfied with the quality,positivo,2026-01-21 14:23:28
+443,Poor customer service,negativo,2026-01-21 22:23:53
+444,User logged in from a new device,neutral,2026-01-22 00:16:38
+445,Everything works perfectly,positivo,2026-01-22 01:39:44
+446,Terrible experience,negativo,2026-01-22 03:16:24
+447,System maintenance will occur tonight,neutral,2026-01-22 11:43:14
+448,Very satisfied with the quality,positivo,2026-01-22 13:59:38
+449,I would not recommend it,negativo,2026-01-22 22:26:38
+450,The server uptime is 99.9%,neutral,2026-01-23 08:12:38
+451,Highly recommend this tool,positivo,2026-01-23 23:36:04
+452,Too many bugs and errors,negativo,2026-01-24 07:59:47
+453,Documentation has been updated,neutral,2026-01-24 09:41:07
+454,Very satisfied with the quality,positivo,2026-01-24 11:10:08
+455,Not user friendly at all,negativo,2026-01-24 12:23:38
+456,The meeting is scheduled for 10 AM,neutral,2026-01-24 12:48:42
+457,Great support from the team,positivo,2026-01-24 16:57:32
+458,I would not recommend it,negativo,2026-01-25 00:25:39
+459,Documentation has been updated,neutral,2026-01-25 10:54:11
+460,Great support from the team,positivo,2026-01-25 11:28:48
+461,Too many bugs and errors,negativo,2026-01-25 14:16:00
+462,The server uptime is 99.9%,neutral,2026-01-25 15:37:24
+463,Excellent usability and speed,positivo,2026-01-25 20:05:02
+464,Very disappointed with the performance,negativo,2026-01-25 20:58:02
+465,System maintenance will occur tonight,neutral,2026-01-26 05:14:53
+466,I love this product,positivo,2026-01-26 07:43:27
+467,I would not recommend it,negativo,2026-01-26 09:37:01
+468,The server uptime is 99.9%,neutral,2026-01-26 09:48:44
+469,Excellent usability and speed,positivo,2026-01-26 10:51:37
+470,Too many bugs and errors,negativo,2026-01-26 11:13:31
+471,The server uptime is 99.9%,neutral,2026-01-26 11:35:51
+472,Everything works perfectly,positivo,2026-01-26 15:48:35
+473,Too many bugs and errors,negativo,2026-01-26 18:39:47
+474,This update includes bug fixes,neutral,2026-01-26 23:26:40
+475,This platform helped me grow,positivo,2026-01-27 00:14:21
+476,Poor customer service,negativo,2026-01-27 00:25:34
+477,User logged in from a new device,neutral,2026-01-27 02:39:52
+478,This platform helped me grow,positivo,2026-01-27 06:48:41
+479,Extremely slow and unresponsive,negativo,2026-01-27 07:26:04
+480,Version 2.1 is now available,neutral,2026-01-28 06:59:44
+481,I love this product,positivo,2026-01-28 07:05:38
+482,I would not recommend it,negativo,2026-01-28 08:52:59
+483,The file was uploaded successfully,neutral,2026-01-28 15:22:25
+484,I love this product,positivo,2026-01-28 16:30:19
+485,Poor customer service,negativo,2026-01-29 01:44:01
+486,The meeting is scheduled for 10 AM,neutral,2026-01-29 02:12:47
+487,Very satisfied with the quality,positivo,2026-01-29 07:09:16
+488,Poor customer service,negativo,2026-01-29 12:43:54
+489,This update includes bug fixes,neutral,2026-01-29 12:55:20
+490,Amazing experience with the service,positivo,2026-01-29 15:53:47
+491,Too many bugs and errors,negativo,2026-01-29 16:54:11
+492,User logged in from a new device,neutral,2026-01-30 02:57:28
+493,This platform helped me grow,positivo,2026-01-30 08:14:53
+494,Poor customer service,negativo,2026-01-30 20:30:45
+495,Version 2.1 is now available,neutral,2026-01-30 23:16:29
+496,Highly recommend this tool,positivo,2026-01-31 01:11:22
+497,This is the worst tool I've used,negativo,2026-01-31 03:50:49
+498,This update includes bug fixes,neutral,2026-01-31 13:20:08
+499,Truly a game changer,positivo,2026-01-31 20:46:32
+500,Extremely slow and unresponsive,negativo,2026-01-31 21:04:18
+501,System maintenance will occur tonight,neutral,2026-01-31 22:36:44
+502,Truly a game changer,positivo,2026-01-31 23:27:57
