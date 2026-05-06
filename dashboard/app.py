@@ -29,7 +29,7 @@ def load_mongo():
     else:
         df["fecha_proceso"] = pd.NaT
     try:
-        enriched = pd.read_csv(ENRICHED, parse_dates=["fecha"])
+        enriched = pd.read_csv(ENRICHED, parse_dates=["fecha"]).drop_duplicates(subset="texto")
         df = df.merge(enriched[["texto", "fecha"]], on="texto", how="left")
         df["fecha_proceso"] = df["fecha"].combine_first(df["fecha_proceso"])
         df.drop(columns=["fecha"], inplace=True)
@@ -89,8 +89,23 @@ with tab1:
         fig2.update_layout(margin=dict(t=10, b=10))
         st.plotly_chart(fig2, use_container_width=True)
 
-    correct = (df["etiqueta"] == df["prediction"]).sum()
-    st.metric("Accuracy del modelo", f"{correct/total*100:.1f}%")
+    # Accuracy real del test set (guardada por Spark en colección metrics)
+    try:
+        client_m = MongoClient(MONGO_URI)
+        metrics = client_m.sentiment_db.metrics.find_one({}, {"_id": 0})
+        client_m.close()
+        if metrics:
+            col_a, col_b, col_c = st.columns(3)
+            col_a.metric("Accuracy (test set 20%)", f"{metrics.get('accuracy', 0)}%")
+            col_b.metric("Train size", metrics.get("train_size", "-"))
+            col_c.metric("Test size",  metrics.get("test_size",  "-"))
+        else:
+            correct = (df["etiqueta"] == df["prediction"]).sum()
+            st.metric("Accuracy del modelo", f"{correct/total*100:.1f}%",
+                      help="Corre el pipeline de Jenkins para ver el accuracy real del test set")
+    except Exception:
+        correct = (df["etiqueta"] == df["prediction"]).sum()
+        st.metric("Accuracy del modelo", f"{correct/total*100:.1f}%")
     st.divider()
 
     st.subheader("Volumen en el tiempo")
