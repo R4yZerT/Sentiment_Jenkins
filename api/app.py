@@ -52,12 +52,7 @@ def get_stats():
     distribucion = {d["_id"]: d["total"] for d in collection.aggregate(dist_pipeline)}
 
     correct = collection.count_documents({
-        "$expr": {
-            "$eq": [
-                "$etiqueta",
-                {"$arrayElemAt": [["positivo", "negativo", "neutral"], "$prediction"]}
-            ]
-        }
+        "$expr": {"$eq": ["$etiqueta", "$prediction"]}
     })
     accuracy = round(correct / total * 100, 2) if total else 0
 
