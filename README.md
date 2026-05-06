@@ -74,7 +74,7 @@ El script `prepare_dataset.py` genera `dataset_final.csv` agregando:
 El job de Spark ejecuta el siguiente pipeline cada vez que Jenkins lo dispara:
 
 1. Lee `dataset_sentimientos_500.csv`
-2. Divide el dataset en **50% train / 50% test** (seed=42 para reproducibilidad)
+2. Divide el dataset en **70% train / 30% test** (seed=42 para reproducibilidad)
 3. Construye un pipeline de NLP + ML:
    - `Tokenizer` → tokeniza el texto en palabras
    - `StopWordsRemover` → elimina palabras vacías (the, is, a...)
