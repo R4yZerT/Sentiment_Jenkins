@@ -1,7 +1,7 @@
 import os
 import sys
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, current_timestamp, lit, round as spark_round
+from pyspark.sql.functions import col, current_timestamp, lit
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import (
@@ -82,19 +82,23 @@ def main():
             seed=42,
         )
 
-        label_converter = IndexToString(
-            inputCol="prediction",
-            outputCol="prediction_label",
-            labels=label_indexer.fit(train_df).labelsArray[0],
-        )
-
         pipeline = Pipeline(
-            stages=indexers + encoders + [assembler, label_indexer, rf, label_converter]
+            stages=indexers + encoders + [assembler, label_indexer, rf]
         )
 
         model = pipeline.fit(train_df)
 
+        # Obtener labels del StringIndexer fitteado
+        fitted_label_indexer = model.stages[len(indexers) + len(encoders) + 1]
+        heart_labels = fitted_label_indexer.labelsArray[0]
+        converter = IndexToString(
+            inputCol="prediction",
+            outputCol="prediction_label",
+            labels=heart_labels,
+        )
+
         test_predictions = model.transform(test_df)
+        test_predictions = converter.transform(test_predictions)
         evaluator = MulticlassClassificationEvaluator(
             labelCol="label", predictionCol="prediction", metricName="accuracy"
         )
@@ -105,7 +109,7 @@ def main():
         print(f"--- Modelo guardado en {model_path} ---")
 
         metrics_df = spark.createDataFrame(
-            [(spark_round(accuracy * 100, 2), train_df.count(), test_df.count())],
+            [(round(accuracy * 100, 2), train_df.count(), test_df.count())],
             ["accuracy", "train_size", "test_size"],
         ).withColumn("fecha", current_timestamp())
 
