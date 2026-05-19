@@ -29,22 +29,29 @@ def main():
         train_df, test_df = df.randomSplit([0.7, 0.3], seed=42)
         print(f"DEBUG: Train={train_df.count()} | Test={test_df.count()}")
 
-        # Pipeline de ML
+        # Pipeline de ML (sin IndexToString — se aplica después manualmente)
         tokenizer      = Tokenizer(inputCol="texto", outputCol="words")
         remover        = StopWordsRemover(inputCol="words", outputCol="filtered")
         hashingTF      = HashingTF(inputCol="filtered", outputCol="rawFeatures", numFeatures=1000)
         idf            = IDF(inputCol="rawFeatures", outputCol="features")
         label_stringIdx = StringIndexer(inputCol="etiqueta", outputCol="label")
         rf = RandomForestClassifier(numTrees=100, maxDepth=10)
-        label_converter = IndexToString(inputCol="prediction", outputCol="prediction_label")
 
-        pipeline = Pipeline(stages=[tokenizer, remover, hashingTF, idf, label_stringIdx, rf, label_converter])
+        pipeline = Pipeline(stages=[tokenizer, remover, hashingTF, idf, label_stringIdx, rf])
 
         # Entrenar solo con train
         model = pipeline.fit(train_df)
 
+        # Obtener labels del StringIndexer fitteado
+        indexer_model = model.stages[4]
+        labels = indexer_model.labels
+        print(f"DEBUG: Label mapping: {list(enumerate(labels))}")
+
         # Evaluar sobre test
         test_predictions = model.transform(test_df)
+        # Convertir predicción numérica a texto usando los labels reales
+        converter = IndexToString(inputCol="prediction", outputCol="prediction_label", labels=labels)
+        test_predictions = converter.transform(test_predictions)
 
         evaluator = MulticlassClassificationEvaluator(
             labelCol="label", predictionCol="prediction", metricName="accuracy"
@@ -52,15 +59,13 @@ def main():
         accuracy = evaluator.evaluate(test_predictions)
         print(f"--- ACCURACY en test set: {accuracy:.4f} ({accuracy*100:.2f}%) ---")
 
-        # Obtener el mapeo de índices a etiquetas del StringIndexer
-        indexer_model = model.stages[4]  # StringIndexer es el stage 4
-        labels = indexer_model.labels    # ["negativo", "neutral", "positivo"] orden real
-
         # Predecir sobre todo el dataset para guardar en MongoDB
         all_predictions = model.transform(df)
+        # Convertir predicción numérica a texto
+        all_predictions = converter.transform(all_predictions)
+
         count = all_predictions.count()
         print(f"DEBUG: Filas procesadas: {count}")
-        print(f"DEBUG: Label mapping: {list(enumerate(labels))}")
 
         if count > 0:
             all_predictions.select("texto", "etiqueta", col("prediction_label").alias("prediction")) \
