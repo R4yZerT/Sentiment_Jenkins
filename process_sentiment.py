@@ -1,16 +1,15 @@
+import os
 import sys
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import current_timestamp, lit
+from pyspark.sql.functions import col, current_timestamp, lit
 from pyspark.sql.types import StructType, StructField, StringType
 from pyspark.ml import Pipeline
-from pyspark.ml.feature import Tokenizer, StopWordsRemover, HashingTF, IDF, StringIndexer
+from pyspark.ml.feature import Tokenizer, StopWordsRemover, HashingTF, IDF, StringIndexer, IndexToString
 from pyspark.ml.classification import RandomForestClassifier
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator
-from pyspark.sql.functions import col
 
 def main():
-    data_path = "/opt/spark/data/dataset_sentimientos_500.csv"
-
+    data_path = os.environ.get("DATA_PATH", "/opt/spark/data/dataset_sentimientos_500.csv")
     spark = SparkSession.builder \
         .appName("SentimentBatchSabaneta") \
         .config("spark.mongodb.write.connection.uri", "mongodb://sentiment_mongo:27017/sentiment_db.results") \
@@ -36,9 +35,10 @@ def main():
         hashingTF      = HashingTF(inputCol="filtered", outputCol="rawFeatures", numFeatures=1000)
         idf            = IDF(inputCol="rawFeatures", outputCol="features")
         label_stringIdx = StringIndexer(inputCol="etiqueta", outputCol="label")
-        lr             = RandomForestClassifier(numTrees=100, maxDepth=10)
+        rf = RandomForestClassifier(numTrees=100, maxDepth=10)
+        label_converter = IndexToString(inputCol="prediction", outputCol="prediction_label")
 
-        pipeline = Pipeline(stages=[tokenizer, remover, hashingTF, idf, label_stringIdx, lr])
+        pipeline = Pipeline(stages=[tokenizer, remover, hashingTF, idf, label_stringIdx, rf, label_converter])
 
         # Entrenar solo con train
         model = pipeline.fit(train_df)
@@ -63,11 +63,6 @@ def main():
         print(f"DEBUG: Label mapping: {list(enumerate(labels))}")
 
         if count > 0:
-            # Convertir prediction numérica a texto usando el mapeo real del modelo
-            from pyspark.ml.feature import IndexToString
-            converter = IndexToString(inputCol="prediction", outputCol="prediction_label", labels=labels)
-            all_predictions = converter.transform(all_predictions)
-
             all_predictions.select("texto", "etiqueta", col("prediction_label").alias("prediction")) \
                 .withColumn("fecha_proceso", current_timestamp()) \
                 .withColumn("accuracy_test", lit(round(accuracy * 100, 2))) \

@@ -7,7 +7,6 @@ import os
 
 st.set_page_config(page_title="Sentiment Dashboard", layout="wide", page_icon="🎭")
 
-LABEL_MAP = {0: "positivo", 1: "negativo", 2: "neutral"}
 COLOR_MAP = {"positivo": "#2ecc71", "negativo": "#e74c3c", "neutral": "#3498db"}
 MONGO_URI   = os.environ.get("MONGO_URI",    "mongodb://localhost:27017/sentiment_db")
 API_URL     = os.environ.get("API_URL",      "http://localhost:5001")
@@ -20,11 +19,7 @@ def load_mongo():
     docs = list(client.sentiment_db.results.find({}, {"_id": 0}))
     client.close()
     df = pd.DataFrame(docs)
-    if "prediction" in df.columns:
-        # Si viene como número (pipeline viejo), mapear; si ya es texto, dejarlo
-        if df["prediction"].dtype in ["int64", "float64"]:
-            df["prediction"] = df["prediction"].map(LABEL_MAP).fillna(df["prediction"].astype(str))
-    else:
+    if "prediction" not in df.columns:
         df["prediction"] = "desconocido"
     if "fecha_proceso" in df.columns:
         df["fecha_proceso"] = pd.to_datetime(df["fecha_proceso"], errors="coerce")
@@ -41,7 +36,7 @@ def load_mongo():
 
 
 # ── Tabs ──────────────────────────────────────────────────────────────────────
-tab1, tab2, tab3 = st.tabs(["📊 Dashboard", "📈 Stats API", "🔮 Predictor"])
+tab1, tab2 = st.tabs(["📊 Dashboard", "📈 Stats API"])
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -178,47 +173,3 @@ with tab2:
             st.info("Sin registros.")
     except Exception as e:
         st.error(f"Error al llamar /sentiments: {e}")
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-# TAB 3 — Predictor en tiempo real (/predict)
-# ══════════════════════════════════════════════════════════════════════════════
-with tab3:
-    st.title("🔮 Predictor de sentimiento")
-    st.caption("Escribe un texto y el modelo te dice si es positivo, negativo o neutral.")
-
-    texto = st.text_area("Texto a analizar", height=120,
-                         placeholder="Ej: This product is absolutely amazing!")
-
-    if st.button("Predecir", type="primary"):
-        if not texto.strip():
-            st.warning("Escribe algo primero.")
-        else:
-            try:
-                r = requests.post(f"{API_URL}/predict",
-                                  json={"texto": texto}, timeout=10)
-                r.raise_for_status()
-                result = r.json()
-
-                label = result.get("prediction", "")
-                emoji = {"positivo": "😊", "negativo": "😠", "neutral": "😐"}.get(label, "❓")
-                color = COLOR_MAP.get(label, "#888")
-
-                st.markdown(f"### {emoji} Resultado: **:{color.replace('#','')}[{label.upper()}]**")
-                st.markdown(f"**Sentimiento detectado:** `{label}`")
-
-                confianza = result.get("confianza", {})
-                if confianza:
-                    st.subheader("Confianza por clase")
-                    conf_df = pd.DataFrame(
-                        list(confianza.items()), columns=["sentimiento", "probabilidad"]
-                    ).sort_values("probabilidad", ascending=False)
-                    fig5 = px.bar(conf_df, x="sentimiento", y="probabilidad",
-                                  color="sentimiento", color_discrete_map=COLOR_MAP,
-                                  range_y=[0, 1], text=conf_df["probabilidad"].apply(lambda x: f"{x:.1%}"))
-                    fig5.update_traces(textposition="outside")
-                    fig5.update_layout(showlegend=False, margin=dict(t=10, b=10))
-                    st.plotly_chart(fig5, use_container_width=True)
-
-            except Exception as e:
-                st.error(f"Error al llamar /predict: {e}")

@@ -1,2 +1,7 @@
 jenkins_home/
 venv/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+*.egg-info/
