@@ -10,6 +10,29 @@ from pyspark.sql.types import (
     DoubleType,
 )
 from pyspark.ml import PipelineModel
+
+
+def main():
+    kafka_brokers = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
+    kafka_topic = os.environ.get("KAFKA_TOPIC", "heart-records")
+    model_path = os.environ.get("MODEL_PATH", "/opt/spark/models/heart_model")
+    mongo_uri = os.environ.get(
+        "MONGO_URI", "mongodb://sentiment_mongo:27017/heart_db.predictions"
+    )
+    checkpoint_path = os.environ.get("CHECKPOINT_PATH", "/opt/spark/checkpoints/heart")
+
+    spark = (
+        SparkSession.builder.appName("HeartStreamConsumer")
+        .config("spark.mongodb.write.connection.uri", mongo_uri)
+        .config("spark.sql.streaming.checkpointLocation", checkpoint_path)
+        .getOrCreate()
+    )
+    spark.sparkContext.setLogLevel("WARN")
+
+    print(f"[stream] Cargando modelo desde {model_path}...")
+    model = PipelineModel.load(model_path)
+    print("[stream] Modelo cargado.")
+from pyspark.ml import PipelineModel
 from pyspark.ml.feature import IndexToString
 
 
@@ -80,7 +103,6 @@ def main():
         ).select("data.*")
 
         predictions_df = model.transform(parsed_df)
-        predictions_df = converter.transform(predictions_df)
 
         output_cols = [
             "Age",
@@ -95,13 +117,13 @@ def main():
             "Oldpeak",
             "ST_Slope",
             "HeartDisease",
-            "prediction_label",
+            "prediction",
         ]
 
         result_df = (
             predictions_df.select(output_cols)
             .withColumn("fecha_proceso", current_timestamp())
-            .withColumnRenamed("prediction_label", "prediction")
+            .withColumn("prediction", col("prediction").cast("int"))
             .withColumnRenamed("HeartDisease", "heart_disease_label")
         )
 

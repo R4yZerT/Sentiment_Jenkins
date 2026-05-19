@@ -30,7 +30,7 @@ def get_predictions():
         try:
             query["prediction"] = int(risk)
         except ValueError:
-            query["prediction_label"] = risk
+            query["prediction"] = risk
     data = list(predictions.find(query, {"_id": 0}).sort("fecha_proceso", -1).limit(100))
     for doc in data:
         if "fecha_proceso" in doc:
@@ -41,8 +41,8 @@ def get_predictions():
 @app.route("/stats", methods=["GET"])
 def get_stats():
     total = predictions.count_documents({})
-    dist_pipeline = [{"$group": {"_id": "$prediction_label", "total": {"$sum": 1}}}]
-    distribucion = {d["_id"]: d["total"] for d in predictions.aggregate(dist_pipeline)}
+    dist_pipeline = [{"$group": {"_id": "$prediction", "total": {"$sum": 1}}}]
+    distribucion = {str(d["_id"]): d["total"] for d in predictions.aggregate(dist_pipeline)}
 
     correct = predictions.count_documents(
         {"$expr": {"$eq": ["$heart_disease_label", "$prediction"]}}

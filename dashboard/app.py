@@ -213,8 +213,9 @@ with tab3:
         st.stop()
 
     total_h = len(h_df)
+    h_df["prediction"] = h_df["prediction"].astype(int)
     risk_map = {0: "Sano", 1: "Riesgo"}
-    h_df["prediction_label"] = h_df["prediction"].map(risk_map).fillna(h_df["prediction"].astype(str))
+    h_df["prediction_label"] = h_df["prediction"].map(risk_map)
 
     h_counts = h_df["prediction_label"].value_counts()
 
