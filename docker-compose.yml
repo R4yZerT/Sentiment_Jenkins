@@ -21,7 +21,20 @@ services:
       - MONGO_URI=mongodb://sentiment_mongo:27017/sentiment_db
       - DATA_PATH=/app/data/dataset_sentimientos_500.csv
     volumes:
-      - ./dataset_sentimientos_500.csv:/app/data/dataset_sentimientos_500.csv:ro
+      - ./data/dataset_sentimientos_500.csv:/app/data/dataset_sentimientos_500.csv:ro
+    networks:
+      - sentiment_network
+
+  heart_api:
+    build:
+      context: ./heart_api
+    container_name: heart_api
+    ports:
+      - "5002:5002"
+    depends_on:
+      - sentiment_mongo
+    environment:
+      - MONGO_URI=mongodb://sentiment_mongo:27017/heart_db
     networks:
       - sentiment_network
 
@@ -33,12 +46,15 @@ services:
       - "8502:8501"
     depends_on:
       - flask_api
+      - heart_api
     environment:
       - MONGO_URI=mongodb://sentiment_mongo:27017/sentiment_db
+      - HEART_MONGO_URI=mongodb://sentiment_mongo:27017/heart_db
       - API_URL=http://sentiment_api:5001
+      - HEART_API_URL=http://heart_api:5002
       - ENRICHED_CSV=/data/dataset_final.csv
     volumes:
-      - ./dataset_final.csv:/data/dataset_final.csv:ro
+      - ./data/dataset_final.csv:/data/dataset_final.csv:ro
     networks:
       - sentiment_network
 
@@ -53,6 +69,7 @@ services:
       - "7077:7077"
     volumes:
       - .:/opt/spark/work-dir
+      - spark_models:/opt/spark/models
     networks:
       - sentiment_network
 
@@ -63,8 +80,52 @@ services:
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
     depends_on:
       - spark-master
+    volumes:
+      - spark_models:/opt/spark/models
     networks:
       - sentiment_network
+
+  kafka:
+    image: bitnami/kafka:3.8
+    container_name: kafka
+    ports:
+      - "29092:29092"
+    environment:
+      - KAFKA_CFG_NODE_ID=1
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:29092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:29092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+    healthcheck:
+      test: ["CMD", "kafka-topics.sh", "--bootstrap-server", "kafka:9092", "--list"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - sentiment_network
+
+  producer:
+    build:
+      context: ./kafka
+    container_name: heart_producer
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_TOPIC=heart-records
+      - CSV_PATH=/data/heart.csv
+      - DELAY_SECONDS=1.0
+    volumes:
+      - ./data/heart.csv:/data/heart.csv:ro
+    networks:
+      - sentiment_network
+    restart: unless-stopped
 
   jenkins:
     build: .
@@ -83,3 +144,4 @@ networks:
 
 volumes:
   mongo_data:
+  spark_models:
