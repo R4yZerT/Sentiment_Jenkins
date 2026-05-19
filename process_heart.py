@@ -10,6 +10,7 @@ from pyspark.sql.types import (
     DoubleType,
 )
 from pyspark.ml import PipelineModel
+from pyspark.ml.feature import IndexToString
 
 
 def main():
@@ -33,6 +34,21 @@ def main():
     model = PipelineModel.load(model_path)
     print("[stream] Modelo cargado.")
 
+    # Obtener labels del StringIndexer del label (stage del label_indexer)
+    # Pipeline stages: 5 indexers + 5 encoders + assembler + label_indexer + rf = 13 stages
+    # label_indexer es el stage 11 (index 11)
+    n_cat = 5
+    label_indexer_idx = n_cat + n_cat + 1  # indexers + encoders + assembler
+    fitted_label_indexer = model.stages[label_indexer_idx]
+    heart_labels = fitted_label_indexer.labelsArray[0]
+    print(f"[stream] Label mapping: {list(enumerate(heart_labels))}")
+
+    converter = IndexToString(
+        inputCol="prediction",
+        outputCol="prediction_label",
+        labels=heart_labels,
+    )
+
     schema = StructType(
         [
             StructField("Age", IntegerType(), True),
@@ -55,7 +71,7 @@ def main():
             spark.readStream.format("kafka")
             .option("kafka.bootstrap.servers", kafka_brokers)
             .option("subscribe", kafka_topic)
-            .option("startingOffsets", "latest")
+            .option("startingOffsets", "earliest")
             .load()
         )
 
@@ -64,6 +80,7 @@ def main():
         ).select("data.*")
 
         predictions_df = model.transform(parsed_df)
+        predictions_df = converter.transform(predictions_df)
 
         output_cols = [
             "Age",
