@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as pxf
+import plotly.express as px
 from pymongo import MongoClient
 import requests
 import os
