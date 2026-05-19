@@ -20,8 +20,9 @@ pipeline {
                 sh "docker exec -u root spark_master python3 -m pip install --upgrade pip"
                 sh "docker exec -u root spark_master python3 -m pip install numpy pandas"
                 
-                // Permisos
-                sh "docker exec -u root spark_master chmod -R 777 /opt/spark/data/ /opt/spark/work-dir/"
+                // Permisos solo en archivos copiados (evita .git montado desde host)
+                sh "docker exec -u root spark_master chmod 777 /opt/spark/work-dir/process_sentiment.py /opt/spark/work-dir/train_heart_model.py /opt/spark/work-dir/process_heart.py"
+                sh "docker exec -u root spark_master chmod 777 /opt/spark/data/dataset_sentimientos_500.csv /opt/spark/data/heart.csv"
             }
         }
 
