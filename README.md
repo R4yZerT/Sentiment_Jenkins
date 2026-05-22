@@ -29,29 +29,25 @@ Pipeline de Big Data con dos módulos: **Análisis de Sentimientos** (batch) y *
                     │   .metrics           │    │  .metrics            │
                     └────────┬─────────────┘    └──────────▲───────────┘
                              │                              │
-              ┌──────────────┴──────────────┐    ┌─────────┴────────────────┐
-              │                             │    │  Spark Streaming Consumer │
-              │   Flask API (:5001)          │    │  (process_heart.py)      │
-              │   /sentiments, /stats        │    │  Kafka → Transform → Mongo│
-              │                               │    └─────────▲────────────────┘
+              ┌──────────────┴──────────────┐    ┌───────────┴────────────┐
+              │                             │    │   Heart Consumer       │
+              │   Flask API (:5001)          │    │   (process_heart.py)   │
+              │   /sentiments, /stats        │    │   Spark Streaming →    │
+              │                               │    │   Kafka → MongoDB       │
+              └──────────────┬──────────────┘    │   restart: always      │
+                             │                    └─────────▲──────────────┘
+                             │                              │
+              ┌──────────────┴──────────────┐    ┌─────────┴────────┐
+              │   Heart Flask API (:5002)     │    │   Kafka Topic    │
+              │   /patients, /predictions     │    │  heart-records   │
+              │   /stats, /risk-summary        │    └────────▲────────┘
               └──────────────┬──────────────┘              │
-                             │                    ┌────────┴────────┐
-                             │                    │   Kafka Topic    │
-                             │                    │  heart-records   │
-                             │                    └────────▲────────┘
-                             │                             │
-                             │                    ┌────────┴────────┐
+                             │                    ┌─────────┴────────┐
                              │                    │  Kafka Producer  │
                              │                    │  (kafka/producer)│
                              │                    │  Lee heart.csv   │
                              │                    │  1 msg/segundo   │
                              │                    └─────────────────┘
-                             │
-              ┌──────────────┴──────────────┐
-              │   Heart Flask API (:5002)     │
-              │   /patients, /predictions     │
-              │   /stats, /risk-summary        │
-              └──────────────┬──────────────┘
                              │
               ┌──────────────┴──────────────┐
               │   Dashboard Streamlit (:8502) │
@@ -71,6 +67,7 @@ Pipeline de Big Data con dos módulos: **Análisis de Sentimientos** (batch) y *
 | `sentiment_mongo` | mongo:latest | 27017 | Base de datos (sentiment_db + heart_db) |
 | `kafka` | apache/kafka:3.7.0 | 29092 | Broker Kafka en modo KRaft |
 | `heart_producer` | personalizado | — | Envía registros de heart.csv a Kafka |
+| `heart_consumer` | personalizado | — | Spark Streaming: Kafka → predicción → MongoDB |
 | `spark_master` | apache/spark:3.5.0 | 8081, 7077 | Master de Spark |
 | `spark_worker` | apache/spark:3.5.0 | — | Worker de Spark |
 | `sentiment_api` | python:3.11-slim | 5001 | API REST Flask (sentimiento) |
@@ -86,30 +83,32 @@ Pipeline de Big Data con dos módulos: **Análisis de Sentimientos** (batch) y *
 .
 ├── docker-compose.yml
 ├── Jenkinsfile
-├── Dockerfile
-├── process_sentiment.py          # Spark batch: sentimiento (PipelineModel)
-├── train_heart_model.py          # Spark batch: entrena modelo heart → /opt/spark/models/
-├── process_heart.py              # Spark streaming: consume Kafka → predice → MongoDB
+├── Dockerfile                           # Dockerfile de Jenkins
+├── process_sentiment.py                 # Spark batch: sentimiento
+├── train_heart_model.py                 # Spark batch: entrena modelo heart
+├── process_heart.py                     # Spark streaming: consume Kafka → predice → MongoDB
 ├── data/
 │   ├── dataset_sentimientos_500.csv
-│   └── heart.csv                 # 918 registros de Heart Failure Prediction
+│   └── heart.csv                        # 918 registros de Heart Failure Prediction
 ├── kafka/
-│   ├── producer.py               # Envía heart.csv a Kafka (1 msg/seg)
+│   ├── producer.py                      # Envía heart.csv a Kafka (1 msg/seg)
 │   ├── Dockerfile
 │   └── requirements.txt
+├── heart_consumer/
+│   └── Dockerfile                       # Spark + numpy para el consumer
 ├── heart_api/
-│   ├── app.py                    # Flask API: /patients, /predictions, /stats, /risk-summary
+│   ├── app.py                           # Flask API: /patients, /predictions, /stats, /risk-summary
 │   ├── Dockerfile
 │   └── requirements.txt
 ├── api/
-│   ├── app.py                    # Flask API: /sentiments, /stats, /predict
+│   ├── app.py                           # Flask API: /sentiments, /stats, /predict
 │   ├── Dockerfile
 │   └── requirements.txt
 ├── dashboard/
-│   ├── app.py                    # Streamlit dashboard (4 tabs)
+│   ├── app.py                           # Streamlit dashboard (4 tabs)
 │   ├── Dockerfile
 │   └── requirements.txt
-└── prepare_dataset.py            # Enriquece CSV de sentimientos con IDs y fechas
+└── prepare_dataset.py                   # Enriquece CSV de sentimientos con IDs y fechas
 ```
 
 ---
@@ -131,12 +130,12 @@ Pipeline NLP + ML en Spark que se ejecuta como job batch desde Jenkins.
 ### Campos en MongoDB
 
 | Campo | Descripción |
-|---|---|
+|---|---|---|
 | `texto` | Texto original |
 | `etiqueta` | Etiqueta real (positivo/negativo/neutral) |
 | `prediction` | Predicción del modelo |
 | `fecha_proceso` | Timestamp de procesamiento |
-| `accuracy_test` | Accuracy del test set (% |
+| `accuracy_test` | Accuracy del test set (%) |
 
 ---
 
@@ -149,7 +148,7 @@ Pipeline de streaming con Kafka que predice riesgo de insuficiencia cardíaca en
 ```
 heart.csv → Kafka Producer → Kafka Topic (heart-records)
                                       │
-                              Spark Streaming Consumer
+                              Heart Consumer (Spark Streaming)
                                       │
                                PipelineModel.load()
                                       │
@@ -169,13 +168,16 @@ heart.csv → Kafka Producer → Kafka Topic (heart-records)
 5. Guarda modelo en `/opt/spark/models/heart_model`
 6. Guarda métricas en `heart_db.metrics`
 
-### process_heart.py (Streaming)
+### Heart Consumer (process_heart.py)
+
+Servicio persistente (`restart: always`) que ejecuta Spark Streaming:
 
 1. Lee de Kafka topic `heart-records` (`startingOffsets=earliest`)
 2. Carga `PipelineModel` desde `/opt/spark/models/heart_model`
 3. Transforma cada micro-batch
 4. Convierte `prediction` a integer (0=Sano, 1=Riesgo)
 5. Guarda en `heart_db.predictions` con `foreachBatch`
+6. Usa checkpoint en volumen `heart_checkpoints` para recuperación ante fallos
 
 ### Campos en MongoDB
 
@@ -249,7 +251,7 @@ python3 prepare_dataset.py
 
 ### 3. Levantar todos los servicios
 ```bash
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 ### 4. Verificar que todo está corriendo
@@ -257,37 +259,28 @@ docker-compose up -d --build
 docker ps
 ```
 
-Deberías ver 9 contenedores: `sentiment_mongo`, `kafka`, `heart_producer`, `spark_master`, `spark_worker`, `sentiment_api`, `heart_api`, `sentiment_dashboard`, `sentiment_jenkins`.
+Deberías ver 10 contenedores: `sentiment_mongo`, `kafka`, `heart_producer`, `heart_consumer`, `spark_master`, `spark_worker`, `sentiment_api`, `heart_api`, `sentiment_dashboard`, `sentiment_jenkins`.
 
-### 5. Configurar Jenkins (primera vez)
+### 5. Configurar Jenkins
 
-```bash
-docker exec sentiment_jenkins cat /var/jenkins_home/secrets/initialAdminPassword
-```
+El volumen de Jenkins se configura fuera del repositorio (`~/jenkins_home`) para evitar problemas de I/O con OneDrive.
 
-Abrir `http://localhost:8085`, pegar la contraseña y:
-1. Instalar plugins sugeridos
-2. Crear Pipeline → **Pipeline script from SCM**
+- **URL**: `http://localhost:8085`
+- **Usuario**: `perezyeiver`
+- **Contraseña**: `perezyeiver123`
+
+Para crear un Pipeline:
+1. **New Item** → Pipeline
+2. **Pipeline** → **Pipeline script from SCM**
 3. SCM: Git, URL del repositorio, branch `*/main`
 4. Script path: `Jenkinsfile`
 5. **Build Now**
 
 ### 6. Ejecutar Jenkins pipeline
 
-Esto entrena ambos modelos (sentimiento + heart) y guarda en MongoDB.
+Esto entrena ambos modelos (sentimiento + heart) y guarda en MongoDB. El consumer de streaming se reinicia automáticamente si hay cambios.
 
-### 7. Iniciar el consumidor de streaming
-
-El Jenkins pipeline entrena el modelo pero no inicia el consumidor. Ejecutar manualmente:
-
-```bash
-docker exec -d spark_master bash -c '/opt/spark/bin/spark-submit \
-  --master "local[*]" \
-  --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,org.mongodb.spark:mongo-spark-connector_2.12:10.4.0 \
-  /opt/spark/work-dir/process_heart.py >> /tmp/heart_stream.log 2>&1'
-```
-
-### 8. Verificar datos en MongoDB
+### 7. Verificar datos en MongoDB
 ```bash
 # Sentimiento
 docker exec sentiment_mongo mongosh sentiment_db --eval "db.results.countDocuments({})"
@@ -296,7 +289,7 @@ docker exec sentiment_mongo mongosh sentiment_db --eval "db.results.countDocumen
 docker exec sentiment_mongo mongosh heart_db --eval "db.predictions.countDocuments({})"
 ```
 
-### 9. Abrir el dashboard
+### 8. Abrir el dashboard
 ```
 http://localhost:8502
 ```
@@ -321,32 +314,30 @@ http://localhost:8502
 ```bash
 # Ver logs de un servicio
 docker logs -f heart_producer
+docker logs -f heart_consumer
 docker logs spark_master
 
-# Ver logs del consumidor de streaming
-docker exec spark_master tail -20 /tmp/heart_stream.log
+# Ver logs del consumidor de streaming (servicio persistente)
+docker logs -f heart_consumer
 
 # Reiniciar un servicio
-docker-compose restart heart_api
+docker compose restart heart_api
 
-# Reconstruir y reiniciar
-docker-compose up -d --build dashboard
-
-# Detener el consumidor de streaming
-docker exec spark_master pkill -f process_heart
+# Reconstruir y reiniciar un servicio específico
+docker compose up -d --build heart_consumer
 
 # Reiniciar el producer de Kafka
-docker-compose restart producer
+docker compose restart producer
 
 # Limpiar datos de MongoDB
 docker exec sentiment_mongo mongosh heart_db --eval 'db.predictions.deleteMany({})'
 docker exec sentiment_mongo mongosh sentiment_db --eval 'db.results.deleteMany({})'
 
 # Apagar todo
-docker-compose down
+docker compose down
 
-# Apagar y eliminar volúmenes (borra MongoDB y modelos)
-docker-compose down -v
+# Apagar y eliminar volúmenes (borra MongoDB, modelos y checkpoints)
+docker compose down -v
 ```
 
 ---
