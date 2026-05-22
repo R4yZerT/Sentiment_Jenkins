@@ -126,13 +126,44 @@ services:
       - sentiment_network
     restart: unless-stopped
 
+  heart_consumer:
+    build:
+      context: ./heart_consumer
+    container_name: heart_consumer
+    user: root
+    restart: always
+    command: >
+      /opt/spark/bin/spark-submit
+      --master local[*]
+      --packages org.mongodb.spark:mongo-spark-connector_2.12:10.4.0,org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0
+      /opt/spark/work-dir/process_heart.py
+    depends_on:
+      kafka:
+        condition: service_healthy
+      sentiment_mongo:
+        condition: service_started
+      spark-master:
+        condition: service_started
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_TOPIC=heart-records
+      - MODEL_PATH=/opt/spark/models/heart_model
+      - MONGO_URI=mongodb://sentiment_mongo:27017/heart_db.predictions
+      - CHECKPOINT_PATH=/opt/spark/checkpoints/heart
+    volumes:
+      - .:/opt/spark/work-dir
+      - spark_models:/opt/spark/models
+      - heart_checkpoints:/opt/spark/checkpoints
+    networks:
+      - sentiment_network
+
   jenkins:
     build: .
     container_name: sentiment_jenkins
     ports:
       - "8085:8080"
     volumes:
-      - ~/jenkins_home:/var/jenkins_home
+      - /Users/yeipezz/jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - sentiment_network
@@ -144,3 +175,4 @@ networks:
 volumes:
   mongo_data:
   spark_models:
+  heart_checkpoints:
